@@ -18,7 +18,7 @@ public class Load_controller : MonoBehaviour
 
     [SerializeField] File_load File_load;
     [SerializeField] Json_load Json_load;
-    [SerializeField] Score_load1 Score_load;
+    [SerializeField] Score_load Score_load;
 
     [SerializeField] string song_dir;
     [SerializeField] string song_file_name1;
