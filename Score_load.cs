@@ -35,18 +35,23 @@ public class Score_load : MonoBehaviour
     /// </summary>
     int bpm_list_index = 0;
 
+    double up_to_time = 0;
 
+    //以下はノート構造体格納用の一次保管変数
+    double temp_note_time;
+
+    int dc_note_list_index = 0;
 
     public void Load_score()
     {
         Dc.make_notes_List(Sd.note_List.Length);
-        Calc_setup();
-        Timing_calc();
+        Area_pointer();
+        //Timing_calc();
 
     }
 
 
-    void Calc_setup()
+    void Area_pointer()
     {
         for (int bar = 1;Break_term(bar * note_resolution);bar++)//全ての小節を見る
         {//↓この2つで1区間(小節)の範囲を指定する
@@ -72,8 +77,11 @@ public class Score_load : MonoBehaviour
                         area_cnt = foot_cnt - head_cnt;
                         area_time = Area_time_calc(area_cnt, Sd.BPM_List[bpm_list_index].value);
                         //もし変拍子対応を入れ込むならここ(Area_time_calcを拡張)
-                        area_one_cnt_time = Time_par_cnt(area_time, note_resolution);
+                        area_one_cnt_time = Time_par_cnt(area_time, area_cnt);
                         Debug.Log("area_time " + area_time);
+                        Debug.Log("area_one_cnt_time " + area_one_cnt_time);
+                        Note_search(head_cnt, foot_cnt, area_one_cnt_time);
+                        up_to_time += area_time;
                     }
                     else//BPM変動開始から別のBPM変動が近い
                     {
@@ -82,8 +90,11 @@ public class Score_load : MonoBehaviour
                         area_cnt = foot_cnt - head_cnt;
                         area_time = Area_time_calc(area_cnt, Sd.BPM_List[bpm_list_index - 1].value);
                         //もし変拍子対応を入れ込むならここ(Area_time_calcを拡張)
-                        area_one_cnt_time = Time_par_cnt(area_time, note_resolution);
+                        area_one_cnt_time = Time_par_cnt(area_time, area_cnt);
                         Debug.Log("area_time " + area_time);
+                        Debug.Log("area_one_cnt_time " + area_one_cnt_time);
+                        Note_search(head_cnt, foot_cnt, area_one_cnt_time);
+                        up_to_time += area_time;
                     }
                     //if (bpm_list_index < Sd.BPM_List.Length)変更前
                     if (bpm_list_index == (Sd.BPM_List.Length -1) || Sd.BPM_List[bpm_list_index+1].count >= bar * note_resolution)
@@ -105,6 +116,8 @@ public class Score_load : MonoBehaviour
                 Debug.Log("area_time " + area_time);
 
                 Debug.Log("bpm_list_index " + bpm_list_index);
+                Note_search(head_cnt, foot_cnt, area_one_cnt_time);
+                up_to_time += area_time;
             }
             else//BPM変動がない
             {
@@ -118,34 +131,59 @@ public class Score_load : MonoBehaviour
                 //もし変拍子対応を入れ込むならここ(area_timeを変化させる)
                 area_one_cnt_time = Time_par_cnt(area_time, note_resolution);
                 Debug.Log("area_time " + area_time);
-
+                Note_search(head_cnt, foot_cnt, area_one_cnt_time);
+                up_to_time += area_time;
             }
-
-
-
-
-
-
-
-
-
-
-
-        
         }
-
-
-
-
-
-
     }
 
 
-
-    void Timing_calc()
+    /// <summary>
+    /// 区間のノートを全て走査する
+    /// </summary>
+    /// <param name="head_cnt"></param>
+    /// <param name="foot_cnt"></param>
+    /// <param name="area_one_cnt_time"></param>
+    void Note_search(double head_cnt, double foot_cnt, double area_one_cnt_time)
     {
+        //↓区間にノートが存在しているか
+        if (head_cnt <= Sd.note_List[note_list_index].count  && Sd.note_List[note_list_index].count < foot_cnt)
+        {
+            for (; ; note_list_index++)
+            {
+                Timing_calc(head_cnt, foot_cnt, area_one_cnt_time);
 
+                Note_data_add();//全ての計算を終えて格納
+                if (note_list_index == (Sd.note_List.Length - 1))//今見ているノートが全体の最後
+                {
+                    break;
+                    //Debug.Log("ff");
+                }
+                else if (Sd.note_List[note_list_index + 1].count >= foot_cnt)//次のノートは次の区間になっている
+                {
+                    note_list_index++;
+                    break;
+                }
+
+            }
+
+        }
+    }
+
+
+    /// <summary>
+    /// ノートのタイミングを計算する
+    /// </summary>
+    /// <param name="head_cnt"></param>
+    /// <param name="foot_cnt"></param>
+    /// <param name="area_one_cnt_time"></param>
+    void Timing_calc(double head_cnt, double foot_cnt, double area_one_cnt_time)
+    {
+        double distance;//区間の頭からノーツまでのcnt距離
+        distance = Sd.note_List[note_list_index].count - head_cnt;
+        Debug.Log("range " + distance);
+        temp_note_time = distance * area_one_cnt_time + up_to_time;
+        Debug.Log("temp_note_time " + temp_note_time + " " + note_list_index);//これがノーツ位置、これとup_to_time
     }
 
 
@@ -316,7 +354,10 @@ public class Score_load : MonoBehaviour
 
 
 
-
+    void Note_data_add()
+    {
+        Dc.notes_List[dc_note_list_index].time = temp_note_time;
+    }
 
 
 
