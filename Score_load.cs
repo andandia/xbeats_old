@@ -42,8 +42,12 @@ public class Score_load : MonoBehaviour
 
     int dc_note_list_index = 0;
 
+
+    public Long_struct[] long_list;
+
     public void Load_score()
     {
+        long_list = new Long_struct[3];//本来はレーンの数にするべき
         Dc.make_notes_List(Sd.note_List.Length);
         Area_pointer();
         //Timing_calc();
@@ -81,6 +85,7 @@ public class Score_load : MonoBehaviour
                         Debug.Log("area_time " + area_time);
                         Debug.Log("area_one_cnt_time " + area_one_cnt_time);
                         Note_search(head_cnt, foot_cnt, area_one_cnt_time);
+                        Long_calc(2, head_cnt, foot_cnt, area_one_cnt_time);
                         up_to_time += area_time;
                     }
                     else//BPM変動開始から別のBPM変動が近い
@@ -94,6 +99,7 @@ public class Score_load : MonoBehaviour
                         Debug.Log("area_time " + area_time);
                         Debug.Log("area_one_cnt_time " + area_one_cnt_time);
                         Note_search(head_cnt, foot_cnt, area_one_cnt_time);
+                        Long_calc(2, head_cnt, foot_cnt, area_one_cnt_time);
                         up_to_time += area_time;
                     }
                     //if (bpm_list_index < Sd.BPM_List.Length)変更前
@@ -117,6 +123,7 @@ public class Score_load : MonoBehaviour
 
                 Debug.Log("bpm_list_index " + bpm_list_index);
                 Note_search(head_cnt, foot_cnt, area_one_cnt_time);
+                Long_calc(2, head_cnt, foot_cnt, area_one_cnt_time);
                 up_to_time += area_time;
             }
             else//BPM変動がない
@@ -132,6 +139,7 @@ public class Score_load : MonoBehaviour
                 area_one_cnt_time = Time_par_cnt(area_time, note_resolution);
                 Debug.Log("area_time " + area_time);
                 Note_search(head_cnt, foot_cnt, area_one_cnt_time);
+                Long_calc(2, head_cnt, foot_cnt, area_one_cnt_time);
                 up_to_time += area_time;
             }
         }
@@ -152,6 +160,7 @@ public class Score_load : MonoBehaviour
             for (; ; note_list_index++)
             {
                 Timing_calc(head_cnt, foot_cnt, area_one_cnt_time);
+                Long_calc(1, head_cnt, foot_cnt, area_one_cnt_time);
 
                 Note_data_add();//全ての計算を終えて格納
                 if (note_list_index == (Sd.note_List.Length - 1))//今見ているノートが全体の最後
@@ -187,7 +196,79 @@ public class Score_load : MonoBehaviour
     }
 
 
-    //for文の条件判定式。長過ぎるので切り出した
+    void Long_calc(int mode ,double head_cnt, double foot_cnt, double area_one_cnt_time)
+    {//このメソッドで用いてるup_to_timeは後に適切な名前に変える
+        if (mode == 1)//ノーツ処理中に呼び出す
+        {
+            if (Sd.note_List[note_list_index].endCnt != 0)//ホールドである
+            {
+                double distance;
+                if (Sd.note_List[note_list_index].endCnt <= foot_cnt)//区間内
+                {
+                    distance = Sd.note_List[note_list_index].endCnt - Sd.note_List[note_list_index].count;
+                    double up_to_time = temp_note_time + (distance * area_one_cnt_time);
+                    Debug.Log(temp_note_time + (distance * area_one_cnt_time));//ホールドが終了する時間が出る
+                    //Debug.Log(distance * area_one_cnt_time);//ホールドし続ける時間が出る
+                    
+                }
+                else//区間外
+                {
+                    distance = foot_cnt - Sd.note_List[note_list_index].count;
+                    double up_to_time = temp_note_time + (distance * area_one_cnt_time);
+                    Debug.Log("up_to_time " + up_to_time);//ホールドが終了する時間が出る
+                    long_list[Sd.note_List[note_list_index].part].end_cnt = Sd.note_List[note_list_index].endCnt;
+                    long_list[Sd.note_List[note_list_index].part].up_to_time = up_to_time;
+                    long_list[Sd.note_List[note_list_index].part].state = 1;
+                }
+            }
+        }
+        else if (mode == 2)//区間を抜けるときに呼び出す
+        {
+            for (int i = 0; i < long_list.Length; i++)
+            {
+                if (long_list[i].state == 1)
+                {
+                    long_list[i].state = 2;
+                }
+                else if (long_list[i].state == 2)
+                {
+                    double distance;
+                    if (long_list[i].end_cnt <= foot_cnt)//区間内
+                    {
+                        distance = Sd.note_List[note_list_index].endCnt - Sd.note_List[note_list_index].count;
+                        double up_to_time = temp_note_time + (distance * area_one_cnt_time);
+                        long_list[i].state = 0;
+                        Debug.Log("");
+                    }
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    }
+
+
+    //Area_pointer for文の条件判定式。長過ぎるので切り出した
     bool Break_term(int foot_cnt)
     {
         bool isbreak;
@@ -361,8 +442,24 @@ public class Score_load : MonoBehaviour
 
 
 
+    /// <summary>
+    /// ロングノーツ計算のための構造体
+    /// </summary>
+    public struct Long_struct
+    { //part(トラック)は配列のインデックスで判定する
+        public int state;
+        public double end_cnt , up_to_time;
+
+        public Long_struct
+            (int st,double endc, double uti)
+        {
+            state = st;
+            end_cnt = endc;
+            up_to_time = uti;
+        }
 
 
+    }
 
 
 }
