@@ -9,7 +9,7 @@ public class Figure_calc : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        //Main_figure_calc(5);//テスト用
+        Main_figure_calc(22.5,-2,2);//テスト用
 
     }
 	
@@ -64,36 +64,53 @@ public class Figure_calc : MonoBehaviour {
 	void Pos_decide(double rotation, double through_x, double through_y)
     {
         /*解決すべき点
-         * oneとtwoでfixed_x,yに入れるべき値が変わってしまい、長ったらしくなる。rotation180のときtwoはrotation90のやつを入れたらよかったりしないか
+         * 1.oneとtwoでfixed_x,yに入れるべき値が変わってしまい、長ったらしくなる。rotation180のときtwoはrotation90のやつを入れたらよかったりしないか
          * 範囲を超えたかの判断がfixed_x,yに何が入ってるかで変わってしまう。わかりやすく短く書けないか
+         1：ro90のときにtwoはro180を入れたらよいことが分かったので、
+         for文で2回回す。if文に回数及びrotationでの条件追加をしてif(i == 1 && rotation  < 90 || i == 2 && rotation  < 180)のようにすれば
+         if1つでone two両方に対応できる
+         2：判定を別メソッドへ切り出し、引数で変えるようにする。引数はfor文中のif内で代入しておく
         */
         double fixed_x = 0;
         double fixed_y = 0;
-		//oneの位置決定
-		if (rotation  < 90){
-            fixed_x = display_size.xMin;
-            fixed_y = display_size.yMax;
-        }
-        else if (rotation <180)
-        {
-            fixed_x = display_size.xMax;
-            fixed_y = display_size.yMax;
-        }
-        else if (rotation < 270)
-        {
-            fixed_x = display_size.xMax;
-            fixed_y = display_size.yMin;
-        }
-        else if (rotation < 360)
-        {
-            fixed_x = display_size.xMin;
-            fixed_y = display_size.yMin;
-        }
-        double temp_pos = Equation_answer("x", fixed_x, fixed_y, note_line.slope_one, through_x, through_y);
-        if (temp_pos > fixed_y)
-        {
-
-        }
+        int cross_pattern = 0;
+		for(int i = 1; i < 3; i++)
+		{
+			if (i ==1 && rotation  < 90 || i== 2 && rotation < 360)
+            {
+            	fixed_x = display_size.xMin;
+            	fixed_y = display_size.yMax;
+                cross_pattern = 1;
+            }
+        	else if (i == 1 && rotation < 180 || i == 2 && rotation < 90)
+        	{
+            	fixed_x = display_size.xMax;
+            	fixed_y = display_size.yMax;
+                cross_pattern = 2;
+            }
+        	else if (i == 1 && rotation < 270 || i == 2 && rotation < 180)
+        	{
+            	fixed_x = display_size.xMax;
+            	fixed_y = display_size.yMin;
+                cross_pattern = 3;
+            }
+        	else if (i == 1 && rotation < 360 || i == 2 && rotation < 270)
+        	{
+            	fixed_x = display_size.xMin;
+            	fixed_y = display_size.yMin;
+                cross_pattern = 4;
+            }
+            string answer_side = "x";
+        	double temp_pos = Equation_answer(answer_side, fixed_x, fixed_y, note_line.slope_one, through_x, through_y);
+            if (is_inside_area(cross_pattern, answer_side, temp_pos) == false)
+            {
+                answer_side = "y";
+                temp_pos = Equation_answer(answer_side, fixed_x, fixed_y, note_line.slope_one, through_x, through_y);
+            }
+            
+		}
+		
+		
 
 
     }
@@ -107,8 +124,10 @@ public class Figure_calc : MonoBehaviour {
 		double answer = 0;
 		if(return_hope == "x")
         {
-			answer = through_x + (fixed_y-through_y)/slope;
-		}else if(return_hope == "y")
+            answer = through_x + (fixed_y-through_y)/slope;
+            //answer = through_x + ((fixed_y - through_y) / slope);
+        }
+        else if(return_hope == "y")
 		{	
 			answer = slope *(fixed_x-through_x)+through_y;
 		}
@@ -122,11 +141,35 @@ public class Figure_calc : MonoBehaviour {
 
     double Tan_calc(double angle)
     {
-        //double tangent = Mathf.Sin((float)angle * Mathf.Deg2Rad)* Mathf.Rad2Deg;//ラジアンに変換
-        //↑はtanの角度が出てるのでは?(必要なのは傾きの値)
-        double tangent = Mathf.Sin((float)angle * Mathf.Deg2Rad);//ラジアンに変換
+        double tangent = Mathf.Tan((float)angle * Mathf.Deg2Rad);//ラジアンに変換
         return tangent;
     }
+
+
+//投げられた値がノート出現範囲内か
+	bool is_inside_area(int cross_pattern,string answer_side ,double aquation_answer)
+	{
+		bool inside = true;
+		if(cross_pattern == 1)
+        {
+			if(answer_side == "x")//投げられた答えはx軸のもの これいらなくね(常にxの答えを投げればよい
+        	{
+        		if(aquation_answer < display_size.xMin)
+        		{
+                    inside = false;
+
+                }
+			}
+			
+		
+		
+		}else if(cross_pattern == 2)
+		{	
+			
+		}
+		return inside;
+	}
+
 
 
     public struct Note_line
