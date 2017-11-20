@@ -14,23 +14,27 @@ public class Figure_calc : MonoBehaviour
     ホールドでの場合わけintを追加して全交点を考慮できるように拡張
     ・Note_line
     さらに2点分出現位置を追加
+    is_inside_areaは改修必要なし。他は対応済み
     */
-
+    /*freeは0.02刻みで1まで
+	0-6
+	7-13
+	14-20
+	21-27
+	28-34
+	
+	*/
 
 
     Display_size display_size;
     Note_line note_line;
+    Touch_point touch_point;
 
 
-    double disp_width_x, disp_width_y;
-    double pos_unit_x, pos_unit_y;
-
+   
 
     /*
     double[] point_position = new double {
-
-
-
     };
     */
 
@@ -38,34 +42,75 @@ public class Figure_calc : MonoBehaviour
     void Start()
     {
         Main_figure_calc(1, 22.5, -2, 2);//テスト用
-
     }
 
     //最終的にはここを呼び出すだけで座標周りの計算ができるようにする
-    void Main_figure_calc(int type, double rotation, double through_x, double through_y)
+    public void Main_figure_calc(int type, double rotation, double through_x, double through_y)
     {//type=1：タッチノート 2:ホールドノート
-        //画面サイズの設定
-        display_size.xMax = 13.65;
-        display_size.xMin = -13.65;
-        display_size.yMax = 7.68;
-        display_size.yMin = -7.68;
-        //画面幅と1点ごとの増加量の設定
-        double adjust_x = 14.76;
-        double adjust_y = 3.36;
-        disp_width_x = display_size.xMax - display_size.xMin - adjust_x;
-        disp_width_y = display_size.yMax - display_size.yMin - adjust_y;
-        pos_unit_x = pos_unit_x / 6;
-        pos_unit_y = pos_unit_y / 6;
-        Debug.Log("ddddd");
+        Screen_width_setup();
         Convert_worldpos(8, 0, 0);//デバック用
 
         Angle_calc(rotation);
-        Pos_decide(rotation, through_x, through_y);
+        Pos_decide(1, rotation);
         //Equation_answer("y", display_size.xMin, display_size.yMax,-2,2,2);
         //Equation_answer("y", display_size.xMin, display_size.yMax, 0.5, 3, 2);
+
+
+        /*実際の流れ
+        Convert_worldposで譜面記述の座標がunityワールド座標になって構造体に入る
+        Angle_calcで譜面のrotationから傾きが構造体に入る
+        Pos_decideで2点のxy座標が構造体に入る
+        後は2点のxy座標をscore_load側からgetすればよい
+        */
+
     }
 
+    void Convert_worldpos(int positionIndex, double freeX, double freeY)
+    {
+        double pos_x = 0;
+        double pos_y = 0;
+        int abs_x = 0;
+        int abs_y = 0; //xyの絶対位置、例えば1と8のxは同じ2になる
 
+        if (positionIndex != -1)
+        {
+            /*xの出し方
+             * positionIndex+1を7から順番に割って余りが出ない数
+             * 
+             * ↑これじゃダメ
+             * その行の端は7*行-1で出せるのでそこからの距離で出せないか
+             * 11だったら端は7*2-1で13になって13-11=2で7-2=5番目
+             	以下のソースはその行の先頭を出してそこからの距離で判断している。 
+             
+             * yの出し方
+             	1行目の先頭と2行目の先頭を出して、
+             	1行目の先頭以上2行目の先頭未満であれば1行目、のようにして判断する
+             * 
+                         
+             以下はxとyが同時に出せることが分かったためそのようにしている
+             */
+            for (int value = 1; value < 5; value++)
+            {
+                if (positionIndex > 7 * (value - 1) && positionIndex < 7 * value)
+                {
+                    abs_x = (positionIndex - 7 * (value - 1)) + 1;
+                    abs_y = value;
+                }
+                Debug.Log("abs_x " + abs_x);
+                Debug.Log("abs_y " + abs_y);
+            }
+            pos_x = (-1 * display_size.disp_width_x) - (display_size.pos_unit_x * abs_x);
+            pos_y = (-1 * display_size.disp_width_y) - (display_size.pos_unit_y * abs_y);
+        }
+        else//freeのとき
+        {
+            pos_x = display_size.free_unit_x * (freeX / 0.02);
+            pos_y = display_size.free_unit_y * (freeY / 0.02);
+        }
+
+        touch_point.x = pos_x;
+        touch_point.y = pos_y;
+    }
 
 
     void Angle_calc(double rotation)
@@ -101,7 +146,7 @@ public class Figure_calc : MonoBehaviour
 
 
 
-    void Pos_decide(double rotation, double through_x, double through_y)
+    void Pos_decide(int type, double rotation)
     {
         /*解決すべき点
          * 1.oneとtwoでfixed_x,yに入れるべき値が変わってしまい、長ったらしくなる。rotation180のときtwoはrotation90のやつを入れたらよかったりしないか
@@ -111,32 +156,40 @@ public class Figure_calc : MonoBehaviour
          if1つでone two両方に対応できる
          2：判定を別メソッドへ切り出し、引数で変えるようにする。引数はfor文中のif内で代入しておく
          1.2について解決したはず
-         
+         3.ホールド対応(4点のxyを出す)
+         3.も対応済み
         */
-        double fixed_x = 0;
+        double through_x = touch_point.x;
+        double through_y = touch_point.y;
+        double fixed_x = 0;//そのパターンでのxy最大/最小値
         double fixed_y = 0;
         int cross_pattern = 0;
-        for (int i = 1; i < 3; i++)
+        int times = 3;
+        if (type == 2)//ホールドだったら
         {
-            if (i == 1 && rotation < 90 || i == 2 && rotation < 360)
+            times = 5;
+        }
+        for (int i = 1; i < times; i++)
+        {
+            if (i == 1 && rotation < 90 || i == 2 && rotation < 360 || i == 3 && rotation < 270 || i == 4 && rotation < 180)
             {
                 fixed_x = display_size.xMin;
                 fixed_y = display_size.yMax;
                 cross_pattern = 1;
             }
-            else if (i == 1 && rotation < 180 || i == 2 && rotation < 90)
+            else if (i == 1 && rotation < 180 || i == 2 && rotation < 90 || i == 3 && rotation < 360 || i == 4 && rotation < 270)
             {
                 fixed_x = display_size.xMax;
                 fixed_y = display_size.yMax;
                 cross_pattern = 2;
             }
-            else if (i == 1 && rotation < 270 || i == 2 && rotation < 180)
+            else if (i == 1 && rotation < 270 || i == 2 && rotation < 180 || i == 3 && rotation < 90 || i == 4 && rotation < 360)
             {
                 fixed_x = display_size.xMax;
                 fixed_y = display_size.yMin;
                 cross_pattern = 3;
             }
-            else if (i == 1 && rotation < 360 || i == 2 && rotation < 270)
+            else if (i == 1 && rotation < 360 || i == 2 && rotation < 270 || i == 3 && rotation < 180 || i == 4 && rotation < 90)
             {
                 fixed_x = display_size.xMin;
                 fixed_y = display_size.yMin;
@@ -171,6 +224,26 @@ public class Figure_calc : MonoBehaviour
                 note_line.note_pos_two_x = temp_pos_fixed;
                 note_line.note_pos_two_y = temp_pos_move;
             }
+            if (i == 3 && answer_side == "x")
+            {//x軸との交点が始点
+                note_line.note_pos_three_x = temp_pos_move;
+                note_line.note_pos_three_y = temp_pos_fixed;
+            }
+            else if (i == 3 && answer_side == "y")
+            {
+                note_line.note_pos_three_x = temp_pos_fixed;
+                note_line.note_pos_three_y = temp_pos_move;
+            }
+            if (i == 4 && answer_side == "x")
+            {//x軸との交点が始点
+                note_line.note_pos_four_x = temp_pos_move;
+                note_line.note_pos_four_y = temp_pos_fixed;
+            }
+            else if (i == 4 && answer_side == "y")
+            {
+                note_line.note_pos_four_x = temp_pos_fixed;
+                note_line.note_pos_four_y = temp_pos_move;
+            }
         }
         /*関係ないメモ
 		タッチに関して、最大タッチ数(=プログラム側で受け付けるタッチの数)は
@@ -183,7 +256,27 @@ public class Figure_calc : MonoBehaviour
 
     }
 
-
+    
+    void Screen_width_setup()
+    {
+        display_size.xMax = 13.65;
+        display_size.xMin = -13.65;
+        display_size.yMax = 7.68;
+        display_size.yMin = -7.68;
+        //画面幅と1点ごとの増加量の設定
+        double adjust_x = 14.76;//実際の画面幅との差を埋めるための数
+        double adjust_y = 3.36;
+        display_size.disp_width_x = display_size.xMax - display_size.xMin - adjust_x;
+        display_size.disp_width_y = display_size.yMax - display_size.yMin - adjust_y;
+        //free_width_x = display_size.xMax - display_size.xMin - (adjust_x / 2);
+        //free_width_y = display_size.yMax - display_size.yMin - (adjust_y / 2);
+        display_size.pos_unit_x = display_size.disp_width_x / 6;//pos_unit_xyから修正
+        display_size.pos_unit_y = display_size.disp_width_y / 6;
+        display_size.free_unit_x = display_size.disp_width_x / 50;
+        display_size.free_unit_y = display_size.disp_width_y / 50;
+        display_size.note_xMin = ((display_size.disp_width_x / 2) * -1) - display_size.pos_unit_x;
+        display_size.note_yMax = ((display_size.disp_width_y / 2) * -1) + display_size.pos_unit_y;
+    }
 
 
     //方程式の代入結果を返す
@@ -238,48 +331,7 @@ public class Figure_calc : MonoBehaviour
     }
 
 
-    void Convert_worldpos(int positionIndex, double freeX, double freeY)
-    {
-        double pos_x, pos_y;
-        int abs_x = 0;
-        int abs_y = 0; //xyの絶対位置、例えば1と8のxは同じ2になる
 
-        if (positionIndex != -1)
-        {
-            /*xの出し方
-             * positionIndex+1を7から順番に割って余りが出ない数
-             * 
-             * ↑これじゃダメ
-             * その行の端は7*行-1で出せるのでそこからの距離で出せないか
-             * 11だったら端は7*2-1で13になって13-11=2で7-2=5番目
-             * 
-             * yの出し方
-             * 
-             */
-
-
-
-
-
-            for (int value = 1; value < 5; value++)
-            {
-                if (positionIndex > 7 * (value - 1) && positionIndex < 7 * value)
-                {
-                    abs_x = (positionIndex - 7 * (value - 1)) + 1;
-                    abs_y = value;
-                }
-                Debug.Log("abs_x " + abs_x);
-                Debug.Log("abs_y " + abs_y);
-            }
-
-
-        }
-        else
-        {
-
-
-        }
-    }
 
 
 
@@ -321,34 +373,45 @@ public class Figure_calc : MonoBehaviour
 
     public struct Display_size
     {
-        public double xMax, xMin, yMax, yMin;
+        public double xMax, xMin, yMax, yMin,
+            disp_width_x, disp_width_y,
+            note_xMin, note_yMax,
+            pos_unit_x, pos_unit_y,
+            free_unit_x, free_unit_y;
 
         public Display_size
-            (double xx, double xn, double yx, double yn)
+            (double xx, double xn, double yx, double yn,
+            double dwx, double dwy, 
+            double nxM, double nyM,
+            double pux, double puy, 
+            double fux, double fuy)
         {
             xMax = xx;
             xMin = xn;
             yMax = yx;
             yMin = yn;
+            disp_width_x = dwx;
+            disp_width_y = dwy;
+            note_xMin = nxM;
+            note_yMax = nyM;
+            pos_unit_x = pux;
+            pos_unit_y = puy;
+            free_unit_x = fux;
+            free_unit_y = fuy;
         }
 
 
     }
 
-    /*また作るのめんどから残すけど使わない
+    /*また作るのめんどいから残すけど使わない
     public struct Touch_point
     {
         public double 1x, 1y, 2x, 2y,3x,3y,4x,4y,5x,5y,6x,6y,7x,7y,8x,8y,9x,9y,10x,10y,
             11x,11y,12x,12y,13x,13y,14x,14y,15x,15y,16x,16y,17x,17y,18x,18y,19x,19y,20x,20y,
             21x,21y,22x,22y,23x,23y,24x,24y,25x,25y,26x,26y,27x,27y,28x,28y,29x,;
-
-
         public Touch_point
             (double xx, double xn, double yx, double yn)
         {
-
-
-
         }
     }
     */
@@ -357,13 +420,13 @@ public class Figure_calc : MonoBehaviour
 
     public struct Touch_point
     {
-        public double point_x, point_y;
+        public double x, y;
 
         public Touch_point
-            (double px, double py)
+            (double point_x, double point_y)
         {
-            point_x = px;
-            point_y = py;
+            x = point_x;
+            y = point_y;
         }
     }
 
