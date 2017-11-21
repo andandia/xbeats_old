@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class Figure_calc : MonoBehaviour
 {
+    //transform.SetPositionAndRotation(Vector3, Quaternion);
+    //位置と向きを同時に指定したいならこれを使おう
+
+
     /*メモ　ホールドでも使えるようにしなければならない
     ホールドの場合
     傾きは一緒。全画面端との交点を計算しなければならない
@@ -31,7 +35,7 @@ public class Figure_calc : MonoBehaviour
     Touch_point touch_point;
 
 
-   
+
 
     /*
     double[] point_position = new double {
@@ -41,22 +45,22 @@ public class Figure_calc : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        Main_figure_calc(1, 22.5, -2, 2);//テスト用
+        Main_figure_calc(1, 22.5, 2,0,0);//テスト用
     }
 
+
     //最終的にはここを呼び出すだけで座標周りの計算ができるようにする
-    public void Main_figure_calc(int type, double rotation, double through_x, double through_y)
+    //type1 タッチ、type2　ホールド
+    public void Main_figure_calc(int type, double rotation, int positionIndex, double freeX, double freeY)
     {//type=1：タッチノート 2:ホールドノート
         Screen_width_setup();
-        Convert_worldpos(8, 0, 0);//デバック用
-
+        Convert_worldpos(positionIndex ,freeX, freeY);
         Angle_calc(rotation);
-        Pos_decide(1, rotation);
-        //Equation_answer("y", display_size.xMin, display_size.yMax,-2,2,2);
-        //Equation_answer("y", display_size.xMin, display_size.yMax, 0.5, 3, 2);
+        Pos_decide(type, rotation);
 
 
         /*実際の流れ
+        Screen_width_setup();で画面サイズ類を定義
         Convert_worldposで譜面記述の座標がunityワールド座標になって構造体に入る
         Angle_calcで譜面のrotationから傾きが構造体に入る
         Pos_decideで2点のxy座標が構造体に入る
@@ -72,7 +76,7 @@ public class Figure_calc : MonoBehaviour
         int abs_x = 0;
         int abs_y = 0; //xyの絶対位置、例えば1と8のxは同じ2になる
 
-        if (positionIndex != -1)
+        if (positionIndex != -1 || freeX == -1 && freeY == -1)//freeXYはNull_rejectによって-1にしている
         {
             /*xの出し方
              * positionIndex+1を7から順番に割って余りが出ない数
@@ -99,7 +103,7 @@ public class Figure_calc : MonoBehaviour
                 Debug.Log("abs_x " + abs_x);
                 Debug.Log("abs_y " + abs_y);
             }
-            pos_x = (-1 * display_size.disp_width_x) - (display_size.pos_unit_x * abs_x);
+            pos_x = display_size.note_xMin + (display_size.pos_unit_x * abs_x);
             pos_y = (-1 * display_size.disp_width_y) - (display_size.pos_unit_y * abs_y);
         }
         else//freeのとき
@@ -256,26 +260,34 @@ public class Figure_calc : MonoBehaviour
 
     }
 
-    
+
     void Screen_width_setup()
     {
         display_size.xMax = 13.65;
         display_size.xMin = -13.65;
         display_size.yMax = 7.68;
         display_size.yMin = -7.68;
+        double pos_xMax = 6.27;//ノートが置かれるxの最大点
+        double pos_yMin = 4;
         //画面幅と1点ごとの増加量の設定
-        double adjust_x = 14.76;//実際の画面幅との差を埋めるための数
-        double adjust_y = 3.36;
+        double adjust_x = (display_size.xMax * 2) - (pos_xMax * 2);//14.76;画面サイズと指定される座標の最大の差を埋めるための数
+        double adjust_y = (display_size.yMax * 2) - (pos_yMin * 2);
         display_size.disp_width_x = display_size.xMax - display_size.xMin - adjust_x;
         display_size.disp_width_y = display_size.yMax - display_size.yMin - adjust_y;
-        //free_width_x = display_size.xMax - display_size.xMin - (adjust_x / 2);
-        //free_width_y = display_size.yMax - display_size.yMin - (adjust_y / 2);
-        display_size.pos_unit_x = display_size.disp_width_x / 6;//pos_unit_xyから修正
-        display_size.pos_unit_y = display_size.disp_width_y / 6;
-        display_size.free_unit_x = display_size.disp_width_x / 50;
-        display_size.free_unit_y = display_size.disp_width_y / 50;
+        display_size.pos_unit_x = display_size.disp_width_x / (7-1);//pos_unit_xyから修正
+        display_size.pos_unit_y = display_size.disp_width_y / (5-1);
+        //display_size.free_width_x = display_size.xMax - display_size.xMin - (adjust_x / 2);
+        //display_size.free_width_y = display_size.yMax - display_size.yMin - (adjust_y / 2);//adjustじゃなくてpos_unit_xyの半分を入れるべきでは
+        display_size.free_width_x = display_size.disp_width_x + (display_size.pos_unit_x / 2);
+        display_size.free_width_y = display_size.disp_width_y + (display_size.pos_unit_y / 2);
+        display_size.free_unit_x = display_size.free_width_x / (1 / 0.02);
+        display_size.free_unit_y = display_size.free_width_y / (1 / 0.02);
         display_size.note_xMin = ((display_size.disp_width_x / 2) * -1) - display_size.pos_unit_x;
-        display_size.note_yMax = ((display_size.disp_width_y / 2) * -1) + display_size.pos_unit_y;
+        display_size.note_yMax = (display_size.disp_width_y / 2) + display_size.pos_unit_y;
+
+        /*display_size.pos_unit_y = display_size.disp_width_y / (5-1);は正しく2がでた
+         * display_size.note_yMax = (display_size.disp_width_y / 2) + display_size.pos_unit_y;がおかしい
+         * /
     }
 
 
@@ -287,7 +299,6 @@ public class Figure_calc : MonoBehaviour
         if (return_hope == "x")
         {
             answer = through_x + (fixed_y - through_y) / slope;
-            //answer = through_x + ((fixed_y - through_y) / slope);
         }
         else if (return_hope == "y")
         {
@@ -332,19 +343,8 @@ public class Figure_calc : MonoBehaviour
 
 
 
-
-
-
-
-
-
-
-
-
-
-
     public struct Note_line
-    { //part(トラック)は配列のインデックスで判定する
+    {
         public double world_pos_x, world_pos_y, angle_one, angle_two, slope_one, slope_two,
             note_pos_one_x, note_pos_one_y, note_pos_two_x, note_pos_two_y,
             note_pos_three_x, note_pos_three_y, note_pos_four_x, note_pos_four_y;
@@ -375,15 +375,17 @@ public class Figure_calc : MonoBehaviour
     {
         public double xMax, xMin, yMax, yMin,
             disp_width_x, disp_width_y,
+            free_width_x, free_width_y,
             note_xMin, note_yMax,
             pos_unit_x, pos_unit_y,
             free_unit_x, free_unit_y;
 
         public Display_size
             (double xx, double xn, double yx, double yn,
-            double dwx, double dwy, 
+            double dwx, double dwy,
+            double fwx, double fwy,
             double nxM, double nyM,
-            double pux, double puy, 
+            double pux, double puy,
             double fux, double fuy)
         {
             xMax = xx;
@@ -392,6 +394,8 @@ public class Figure_calc : MonoBehaviour
             yMin = yn;
             disp_width_x = dwx;
             disp_width_y = dwy;
+            free_width_x = fwx;
+            free_width_y = fwy;
             note_xMin = nxM;
             note_yMax = nyM;
             pos_unit_x = pux;
@@ -402,21 +406,6 @@ public class Figure_calc : MonoBehaviour
 
 
     }
-
-    /*また作るのめんどいから残すけど使わない
-    public struct Touch_point
-    {
-        public double 1x, 1y, 2x, 2y,3x,3y,4x,4y,5x,5y,6x,6y,7x,7y,8x,8y,9x,9y,10x,10y,
-            11x,11y,12x,12y,13x,13y,14x,14y,15x,15y,16x,16y,17x,17y,18x,18y,19x,19y,20x,20y,
-            21x,21y,22x,22y,23x,23y,24x,24y,25x,25y,26x,26y,27x,27y,28x,28y,29x,;
-        public Touch_point
-            (double xx, double xn, double yx, double yn)
-        {
-        }
-    }
-    */
-
-
 
     public struct Touch_point
     {
@@ -430,4 +419,20 @@ public class Figure_calc : MonoBehaviour
         }
     }
 
-}
+
+
+
+    /*また作るのめんどいから残すけど使わない
+  public struct Touch_point
+  {
+      public double 1x, 1y, 2x, 2y,3x,3y,4x,4y,5x,5y,6x,6y,7x,7y,8x,8y,9x,9y,10x,10y,
+          11x,11y,12x,12y,13x,13y,14x,14y,15x,15y,16x,16y,17x,17y,18x,18y,19x,19y,20x,20y,
+          21x,21y,22x,22y,23x,23y,24x,24y,25x,25y,26x,26y,27x,27y,28x,28y,29x,;
+      public Touch_point
+          (double xx, double xn, double yx, double yn)
+      {
+      }
+  }
+  */
+
+    }
