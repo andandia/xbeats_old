@@ -55,12 +55,13 @@ public class Json_load : MonoBehaviour {
         {
             Score_data.note_List[i].count = jsons["notes"][i]["count"];
             Score_data.note_List[i].part = jsons["notes"][i]["part"];
-            Score_data.note_List[i].endCnt = Null_reject(i, "endCnt");
+            Score_data.note_List[i].endCnt = jsons["notes"][i]["prop"]["endCnt"];
             Score_data.note_List[i].flickAngle = jsons["notes"][i]["prop"]["flickAngle"];//ないとnull
             Score_data.note_List[i].freeX = Null_reject(i, "freeX");
             Score_data.note_List[i].freeY = Null_reject(i, "freeY");
-            Score_data.note_List[i].positionIndex = (int)Null_reject(i, "positionIndex");
+            Score_data.note_List[i].positionIndex = jsons["notes"][i]["prop"]["positionIndex"];
             Score_data.note_List[i].rotation = Rotation_formating(i);
+            //パラメーターに明示的に0を入れてもnullになる謎仕様のためpositionはNull_rejectしない
         }
         Score_data.note_List.Sort(c => c.count, c => c.part);
 

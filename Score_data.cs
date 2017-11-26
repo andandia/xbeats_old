@@ -1,6 +1,4 @@
-﻿using NUnit.Framework;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Score_data : MonoBehaviour
 {
@@ -83,6 +81,7 @@ public class Score_data : MonoBehaviour
             freeY = fY;
             positionIndex = posIndex;
             rotation = rot;
+
         }
 
 
