@@ -25,7 +25,7 @@ public class File_load : MonoBehaviour {
 
         }
 
-        Debug.Log(filepath);
+        //Debug.Log(filepath);
 
         return filepath;
     }

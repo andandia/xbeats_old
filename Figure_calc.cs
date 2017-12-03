@@ -103,8 +103,8 @@ public class Figure_calc : MonoBehaviour
 					abs_x = (positionIndex - 7 * (value - 1)) + 1;
 					abs_y = value;
 				}
-				Debug.Log("abs_x " + abs_x);
-				Debug.Log("abs_y " + abs_y);
+				//Debug.Log("abs_x " + abs_x);
+				//Debug.Log("abs_y " + abs_y);
 			}
 			pos_x = display_size.note_pos_xMin - (display_size.pos_unit_x * abs_x);
 			pos_y = display_size.note_pos_yMax - (display_size.pos_unit_y * abs_y);
