@@ -8,11 +8,13 @@ public class Data_cabinet : MonoBehaviour
 
 	public notes_struct[] notes_List;
 	public Tween[] tween_List;
-
+	[SerializeField] public GameObject[] cache_arrow = new GameObject[30];//todo 数は可変に
 
 	int make_note_index = 0;
 
 	int judge_note_index = 0;
+
+	int cache_arrow_index = 0;
 
 
 	//ここだけ呼べば勝手にlist2つ作ってくれる
@@ -34,43 +36,48 @@ public class Data_cabinet : MonoBehaviour
 	}
 
 
+	public void Add_cache_arrow(GameObject arrow)
+	{
+		cache_arrow[cache_arrow_index] = arrow;
+		cache_arrow_index++;//todo これは後で消す
+	}
+
+
+
+
+	
 	public struct notes_struct
 	{
-		public double noteType, startTime, steamTime, parfectTime,
+		public double noteType, startTime, parfectTime,
 				endCnt, rotation;
-				
-		public float note_end_posX, note_end_posY,
-			note_pos1X, note_pos1Y, note_pos2X, note_pos2Y, note_pos3X, note_pos3Y, note_pos4X, note_pos4Y;
+		public float steamTime;
+		public Vector3 note_end_pos,
+			note_pos1,note_pos2, note_pos3, note_pos4;
 		public int flickAngle, syncTimes;
 		public bool alive;
 
 		public notes_struct
-				(double Ty, double starTi, double steTi, double pTi,
+				(double Ty, double starTi, float steTi, double pTi,
 				float nepX, float nepY,
 				float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
 				double endC, double rot, int flickA, int syTi,
 				bool al
 				)
 		{
-			noteType = Ty;
-			startTime = starTi;
-			steamTime = steTi;
-			parfectTime = pTi;
-			note_end_posX = nepX;
-			note_end_posY = nepY;
-			note_pos1X = x1;
-			note_pos1Y = y1;
-			note_pos2X = x2;
-			note_pos2Y = y2;
-			note_pos3X = x3;
-			note_pos3Y = y3;
-			note_pos4X = x4;
-			note_pos4Y = y4;
-			endCnt = endC;
-			rotation = rot;
-			flickAngle = flickA;
-			syncTimes = syTi;
-			alive = al;
+			noteType     = Ty;
+			startTime    = starTi;
+			steamTime    = steTi;
+			parfectTime  = pTi;
+			note_end_pos = new Vector3(nepX, nepX);
+			note_pos1    = new Vector3(x1, y1);
+			note_pos2    = new Vector3(x2, y2);
+			note_pos3    = new Vector3(x3, y3);
+			note_pos4    = new Vector3(x4, y4);
+			endCnt       = endC;
+			rotation     = rot;
+			flickAngle   = flickA;
+			syncTimes    = syTi;
+			alive        = al;
 		}
 
 
@@ -97,7 +104,7 @@ public class Data_cabinet : MonoBehaviour
 	}
 
 
-	public void Set_make_note_index()
+	public void Add_make_note_index()
 	{
 		make_note_index++;
 	}
@@ -112,8 +119,15 @@ public class Data_cabinet : MonoBehaviour
 
 
 
-	public void Set_judge_note_index()
+	public void Add_judge_note_index()
 	{
 		judge_note_index++;
+	}
+
+
+
+	public void Add_cache_arrow_index()
+	{
+		cache_arrow_index++;
 	}
 }

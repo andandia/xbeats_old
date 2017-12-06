@@ -532,29 +532,29 @@ public class Score_load : MonoBehaviour
 		{
 			noteType = 2;//ホールド
 		}
-		Dc.notes_List[dc_note_list_index].noteType = noteType;
-		Dc.notes_List[dc_note_list_index].startTime = temp_start_time;
-		Dc.notes_List[dc_note_list_index].steamTime = note_steam_time;
-		Dc.notes_List[dc_note_list_index].parfectTime = temp_note_time;
-		Dc.notes_List[dc_note_list_index].note_end_posX = (float)temp_note_pos[0];
-		Dc.notes_List[dc_note_list_index].note_end_posY = (float)temp_note_pos[1];
-		Dc.notes_List[dc_note_list_index].note_pos1X = (float)temp_note_pos[2];
-		Dc.notes_List[dc_note_list_index].note_pos1Y = (float)temp_note_pos[3];
-		Dc.notes_List[dc_note_list_index].note_pos2X = (float)temp_note_pos[4];
-		Dc.notes_List[dc_note_list_index].note_pos2Y = (float)temp_note_pos[5];
+		Dc.notes_List[dc_note_list_index].noteType       = noteType;
+		Dc.notes_List[dc_note_list_index].startTime      = temp_start_time;
+		Dc.notes_List[dc_note_list_index].steamTime      = (float)note_steam_time;
+		Dc.notes_List[dc_note_list_index].parfectTime    = temp_note_time;
+		Dc.notes_List[dc_note_list_index].note_end_pos.x = (float)temp_note_pos[0];
+		Dc.notes_List[dc_note_list_index].note_end_pos.y = (float)temp_note_pos[1];
+		Dc.notes_List[dc_note_list_index].note_pos1.x    = (float)temp_note_pos[2];
+		Dc.notes_List[dc_note_list_index].note_pos1.y    = (float)temp_note_pos[3];
+		Dc.notes_List[dc_note_list_index].note_pos2.x    = (float)temp_note_pos[4];
+		Dc.notes_List[dc_note_list_index].note_pos2.y    = (float)temp_note_pos[5];
 
-		if (noteType == 2)
+		if (noteType                                     == 2)
 		{
-			Dc.notes_List[dc_note_list_index].note_pos3X = (float)temp_note_pos[6];
-			Dc.notes_List[dc_note_list_index].note_pos3Y = (float)temp_note_pos[7];
-			Dc.notes_List[dc_note_list_index].note_pos4X = (float)temp_note_pos[8];
-			Dc.notes_List[dc_note_list_index].note_pos4Y = (float)temp_note_pos[9];
+			Dc.notes_List[dc_note_list_index].note_pos3.x  = (float)temp_note_pos[6];
+			Dc.notes_List[dc_note_list_index].note_pos3.y  = (float)temp_note_pos[7];
+			Dc.notes_List[dc_note_list_index].note_pos4.x  = (float)temp_note_pos[8];
+			Dc.notes_List[dc_note_list_index].note_pos4.y  = (float)temp_note_pos[9];
 		}
-		Dc.notes_List[dc_note_list_index].endCnt = 0;//todo ホールド時間を入れる方法を考えたら修正
-		Dc.notes_List[dc_note_list_index].rotation = Sd.note_List[dc_note_list_index].rotation;
-		Dc.notes_List[dc_note_list_index].flickAngle = 0;//todo 角度を8方角にするメソッドを作る
-		Dc.notes_List[dc_note_list_index].syncTimes = temp_sync_notes;
-		Dc.notes_List[dc_note_list_index].alive = true;
+		Dc.notes_List[dc_note_list_index].endCnt         = 0;//todo ホールド時間を入れる方法を考えたら修正
+		Dc.notes_List[dc_note_list_index].rotation       = Sd.note_List[dc_note_list_index].rotation;
+		Dc.notes_List[dc_note_list_index].flickAngle     = 0;//todo 角度を8方角にするメソッドを作る
+		Dc.notes_List[dc_note_list_index].syncTimes      = temp_sync_notes;
+		Dc.notes_List[dc_note_list_index].alive          = true;
 		if (Dc.notes_List.Length - 1 != dc_note_list_index)
 		{
 			dc_note_list_index++;

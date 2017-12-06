@@ -14,11 +14,9 @@ using UnityEngine;
 
 public class Note_maker : MonoBehaviour
 {
-	[SerializeField]
-	Time_manager Time;
-
-	[SerializeField]
-	Data_cabinet Dc;
+	[SerializeField]	Time_manager Time;
+	[SerializeField]	Data_cabinet Dc;
+	[SerializeField] ObjectPool Op;
 
 	void Start()
 	{
@@ -42,12 +40,13 @@ public class Note_maker : MonoBehaviour
 			if (Time.Get_time() >= Dc.notes_List[make_index].startTime && Dc.notes_List[make_index].alive == true)
 			{
 				Dc.notes_List[make_index].alive = false;
+				Op.Make_note(1);
 				if (Dc.notes_List[make_index].syncTimes > 0)
 				{
-
+						
 				}
 				Debug.Log("startTime " + Dc.notes_List[make_index].startTime);
-				Dc.Set_make_note_index();
+				Dc.Add_make_note_index();
 				Debug.Log("time " + Time.Get_time());
 				Debug.Log("生成 ");
 				//何回も回ってしまいそうな気がする
