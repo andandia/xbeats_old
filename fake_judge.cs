@@ -6,6 +6,7 @@ using UnityEngine;
 public class fake_judge : MonoBehaviour {
 
 	[SerializeField] fake_Dc fake_Dc;
+	[SerializeField] fake_objPool fake_op;
 
 	/*fake系設計
 	 * 実証のための疑似スクリプト群
@@ -20,8 +21,8 @@ public class fake_judge : MonoBehaviour {
 	 * 
 	 */
 
-	
-	
+
+
 	// Update is called once per frame
 	void Update () {
 		if (Input.GetKeyDown(KeyCode.Space))
@@ -32,6 +33,9 @@ public class fake_judge : MonoBehaviour {
 			 * IncjudgeCountが実行されてしまう。この時点でjudgeCountと止めたいtweenがズレてしまうということになってしまう。
 			 */
 			{
+				int objID = fake_Dc.ObjID[fake_Dc.GetjudgeCount()];
+				Debug.Log("objID " + objID);
+				fake_op.Objfalse(objID);
 				fake_Dc.Returntween(judgecount).Kill();
 				fake_Dc.IncjudgeCount();
 			}

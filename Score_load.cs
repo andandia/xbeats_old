@@ -6,6 +6,7 @@ public class Score_load : MonoBehaviour
 	[SerializeField] private Data_cabinet Dc;
 	[SerializeField] private Figure_calc Fc;
 
+
 	/// <summary>
 	/// 小節を何等分してるか。p×bの仕様に準拠。
 	/// </summary>
@@ -64,7 +65,7 @@ public class Score_load : MonoBehaviour
 	{
 		temp_note_pos = new double[10];
 		long_list = new Long_struct[3];//本来はレーンの数にするべき
-		Dc.make_lists(Sd.note_List.Length);
+		Dc.ToCreate_note_data_List(Sd.note_List.Length);
 		Area_pointer();
 	}
 
@@ -524,38 +525,39 @@ public class Score_load : MonoBehaviour
 	private void Note_data_add()
 	{
 		int noteType = 0;//タッチ
-		if (Dc.notes_List[dc_note_list_index].flickAngle != 0)
+		if (Dc.Note_data_list[dc_note_list_index].flickAngle != 0)
 		{
 			noteType = 1;//フリック
 		}
-		else if (Dc.notes_List[dc_note_list_index].endCnt != 0)
+		else if (Dc.Note_data_list[dc_note_list_index].endCnt != 0)
 		{
 			noteType = 2;//ホールド
 		}
-		Dc.notes_List[dc_note_list_index].noteType       = noteType;
-		Dc.notes_List[dc_note_list_index].startTime      = temp_start_time;
-		Dc.notes_List[dc_note_list_index].steamTime      = (float)note_steam_time;
-		Dc.notes_List[dc_note_list_index].parfectTime    = temp_note_time;
-		Dc.notes_List[dc_note_list_index].note_end_pos.x = (float)temp_note_pos[0];
-		Dc.notes_List[dc_note_list_index].note_end_pos.y = (float)temp_note_pos[1];
-		Dc.notes_List[dc_note_list_index].note_pos1.x    = (float)temp_note_pos[2];
-		Dc.notes_List[dc_note_list_index].note_pos1.y    = (float)temp_note_pos[3];
-		Dc.notes_List[dc_note_list_index].note_pos2.x    = (float)temp_note_pos[4];
-		Dc.notes_List[dc_note_list_index].note_pos2.y    = (float)temp_note_pos[5];
+		Dc.Note_data_list[dc_note_list_index].noteType       = noteType;
+		Dc.Note_data_list[dc_note_list_index].startTime      = temp_start_time;
+		Dc.Note_data_list[dc_note_list_index].steamTime      = (float)note_steam_time;
+		Dc.Note_data_list[dc_note_list_index].parfectTime    = temp_note_time;
+		Dc.Note_data_list[dc_note_list_index].note_end_pos.x = (float)temp_note_pos[0];
+		Dc.Note_data_list[dc_note_list_index].note_end_pos.y = (float)temp_note_pos[1];
+		Dc.Note_data_list[dc_note_list_index].note_pos1.x    = (float)temp_note_pos[2];
+		Dc.Note_data_list[dc_note_list_index].note_pos1.y    = (float)temp_note_pos[3];
+		Dc.Note_data_list[dc_note_list_index].note_pos2.x    = (float)temp_note_pos[4];
+		Dc.Note_data_list[dc_note_list_index].note_pos2.y    = (float)temp_note_pos[5];
 
-		if (noteType                                     == 2)
+		if (noteType == 2)
 		{
-			Dc.notes_List[dc_note_list_index].note_pos3.x  = (float)temp_note_pos[6];
-			Dc.notes_List[dc_note_list_index].note_pos3.y  = (float)temp_note_pos[7];
-			Dc.notes_List[dc_note_list_index].note_pos4.x  = (float)temp_note_pos[8];
-			Dc.notes_List[dc_note_list_index].note_pos4.y  = (float)temp_note_pos[9];
+			Dc.Note_data_list[dc_note_list_index].note_pos3.x  = (float)temp_note_pos[6];
+			Dc.Note_data_list[dc_note_list_index].note_pos3.y  = (float)temp_note_pos[7];
+			Dc.Note_data_list[dc_note_list_index].note_pos4.x  = (float)temp_note_pos[8];
+			Dc.Note_data_list[dc_note_list_index].note_pos4.y  = (float)temp_note_pos[9];
 		}
-		Dc.notes_List[dc_note_list_index].endCnt         = 0;//todo ホールド時間を入れる方法を考えたら修正
-		Dc.notes_List[dc_note_list_index].rotation       = Sd.note_List[dc_note_list_index].rotation;
-		Dc.notes_List[dc_note_list_index].flickAngle     = 0;//todo 角度を8方角にするメソッドを作る
-		Dc.notes_List[dc_note_list_index].syncTimes      = temp_sync_notes;
-		Dc.notes_List[dc_note_list_index].alive          = true;
-		if (Dc.notes_List.Length - 1 != dc_note_list_index)
+		Dc.Note_data_list[dc_note_list_index].endCnt         = 0;//todo ホールド時間を入れる方法を考えたら修正
+		Dc.Note_data_list[dc_note_list_index].rotation       = (-1) * (float)Sd.note_List[dc_note_list_index].rotation;//todo *-1で影響ないか
+		Dc.Note_data_list[dc_note_list_index].flickAngle     = 0;//todo 角度を8方角にするメソッドを作る
+		Dc.Note_data_list[dc_note_list_index].syncTimes      = temp_sync_notes;
+		Dc.Note_data_list[dc_note_list_index].alive          = true;
+		Dc.Note_data_list[dc_note_list_index].made					 = false;
+		if (Dc.Note_data_list.Length - 1 != dc_note_list_index)
 		{
 			dc_note_list_index++;
 		}

@@ -25,10 +25,12 @@ public class fake_notemaker : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		flame++;
+		//ノート生成
 		if (flame % flameLimit == 0 && fake_Dc.GetMakeCount() != fake_Dc.tween.Length )
 		{
 			//ここでnull回避してないからエラー出る
 			GameObject game = fake_objPool.ReturnObj(fake_Dc.GetMakeCount());
+
 			fake_Dc.IncMakeCount();
 			Tween testtween = game.transform.DOMove(new Vector3(0f, 0f, 0f), speed);
 			fake_Dc.InsertTween(testtween);

@@ -1,5 +1,9 @@
 ﻿using UnityEngine;
 
+
+/// <summary>
+/// Jsonで読んだ情報を格納する
+/// </summary>
 public class Score_data : MonoBehaviour
 {
 
@@ -9,12 +13,6 @@ public class Score_data : MonoBehaviour
     public double offset;
 
    
-
-    // Use this for initialization
-    void Start()
-    {
-
-    }
 
 
 

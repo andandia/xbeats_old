@@ -259,7 +259,7 @@ public class Figure_calc : MonoBehaviour
 		{
 			answer = slope * (fixed_x - through_x) + through_y;
 		}
-		Debug.Log("answer " + answer);
+		//Debug.Log("answer " + answer);
 		return answer;
 	}
 

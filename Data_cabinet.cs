@@ -1,133 +1,120 @@
 ﻿using DG.Tweening;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Data_cabinet : MonoBehaviour
 {
-
-	public notes_struct[] notes_List;
-	public Tween[] tween_List;
-	[SerializeField] public GameObject[] cache_arrow = new GameObject[30];//todo 数は可変に
-
-	int make_note_index = 0;
-
-	int judge_note_index = 0;
-
-	int cache_arrow_index = 0;
-
-
-	//ここだけ呼べば勝手にlist2つ作ってくれる
-	public void make_lists(int length)
-	{
-		make_notes_List(length);
-		make_tween_List(length);
-	}
-
-
-	void make_notes_List(int length)
-	{
-		notes_List = new notes_struct[length];
-	}
-
-	void make_tween_List(int length)
-	{
-		tween_List = new Tween[length];
-	}
-
-
-	public void Add_cache_arrow(GameObject arrow)
-	{
-		cache_arrow[cache_arrow_index] = arrow;
-		cache_arrow_index++;//todo これは後で消す
-	}
-
-
-
-
-	
-	public struct notes_struct
-	{
-		public double noteType, startTime, parfectTime,
-				endCnt, rotation;
-		public float steamTime;
-		public Vector3 note_end_pos,
-			note_pos1,note_pos2, note_pos3, note_pos4;
-		public int flickAngle, syncTimes;
-		public bool alive;
-
-		public notes_struct
-				(double Ty, double starTi, float steTi, double pTi,
-				float nepX, float nepY,
-				float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
-				double endC, double rot, int flickA, int syTi,
-				bool al
-				)
-		{
-			noteType     = Ty;
-			startTime    = starTi;
-			steamTime    = steTi;
-			parfectTime  = pTi;
-			note_end_pos = new Vector3(nepX, nepX);
-			note_pos1    = new Vector3(x1, y1);
-			note_pos2    = new Vector3(x2, y2);
-			note_pos3    = new Vector3(x3, y3);
-			note_pos4    = new Vector3(x4, y4);
-			endCnt       = endC;
-			rotation     = rot;
-			flickAngle   = flickA;
-			syncTimes    = syTi;
-			alive        = al;
-		}
-
-
-	}
 	/*
-	 * 必要なもの(+は既に出せてる
-	 * ノートタイプ +
-	 * スタート時間+
-	 * 流すのにかける時間+
-	 * パーフェクト時間+
-	 * ノート始点位置xy*4+ (変数名の先頭に数字は使えないのでこの形)
-	 * ノート終点位置xy +
-	 * ロング終了時間+
-	 * rotation(unityに突っ込むには*-1の必要あり)+
-	 * フリック角度+(とりあえず8方向数値)
-	 * 同時押し有無(このノートを起点としていくつあるかで表現)
-	 */
+	 * 命名ルール
+	 * リスト→make_(対象)_list
+	 * キャッシュ配列→Add_(対象)_list
+	 index系命名規則目的(～する)_動作(Get、Add)_配列名_index
+	 * indexの取得、増加→Get_(対象)、Inc_(対象)
+	*/
+	[SerializeField] Time_manager Time;
+
+
+	public Note_data[] Note_data_list;
+	public Made_note[] Note_made_list;
+	[SerializeField] public GameObject[] cache_arrow_list = new GameObject[30];//todo 数は可変に
+	[SerializeField] public Tween[] cache_tween_list = new Tween[30];//todo 数は可変に
+
+	/// <summary>
+	/// ノート作成時にNote_data_listから値を取ってくるためのindex
+	/// </summary>
+	private int Create_get_note_data_index;
+
+	/// <summary>
+	/// ノート作成後にNote_made_list(作ったノートIDリスト)に値を格納するためのindex
+	/// </summary>
+	private int Create_add_note_made_index;
+
+
+	//private int Note_data_list_index;
+	//private int Note_made_list_index;
+	/*--------------------------------------------------------------------------*/
+	//public int Get_Note_data_list_index() { return Note_data_list_index; }
+	//public int Get_Note_made_list_index() { return Note_made_list_index; }
+	public int Get_Create_note_data_index() { return Create_get_note_data_index; }
+
+
+	/*--------------------------------------------------------------------------*/
+	public void Inc_Create_note_data_index() { Create_get_note_data_index++; }
 
 
 
-	public int Get_make_note_index()
+	/*--------------------------------------------------------------------------*/
+
+	public void ToCreate_note_data_List(int length)
 	{
-		return make_note_index;
+		Note_data_list = new Note_data[length];
+	}
+
+	public void ToCreate_note_made_List(int length)
+	{
+		Note_made_list = new Made_note[length];
+	}
+
+	/*--------------------------------------------------------------------------*/
+	//tureならif続行
+	/// <summary>
+	/// 作るノートを探すか
+	/// </summary>
+	/// <returns></returns>
+	public bool Is_create_note_search()
+	{
+		bool search = false;
+		if (Create_get_note_data_index <= Note_data_list.Length - 1)
+		{
+			search = true;
+		}
+		return search;
 	}
 
 
-	public void Add_make_note_index()
+	/// <summary>
+	/// ノートを作るかどうか
+	/// </summary>
+	/// <returns></returns>
+	public bool Is_create_note()
 	{
-		make_note_index++;
+		bool create = false;
+		if (Time.Get_time() >= Note_data_list[Create_get_note_data_index].startTime &&
+				Note_data_list[Create_get_note_data_index].made == false)
+		{
+			create = true;
+		}
+		return create;
+	}
+	//Time.Get_time() >= Dc.notes_list[make_index].startTime && Dc.notes_list[make_index].alive == true)
+
+	/// <summary>
+	/// 作ったノートのフラグを折る
+	/// </summary>
+	public void Mark_Made_note()
+	{
+		Note_data_list[Create_get_note_data_index].made = true;
+	}
+	
+	
+
+	/// <summary>
+	/// ノート作成時にnote_dataを取得する
+	/// </summary>
+	/// <returns></returns>
+	public Note_data Get_Create_note_data()
+	{
+		return Note_data_list[Create_get_note_data_index];
 	}
 
-
-
-	public int Get_judge_note_index()
+	/// <summary>
+	/// Note_made_listに追加する
+	/// </summary>
+	/// <param name="made_Note"></param>
+	public void Add_Note_made_list(Made_note made_Note)
 	{
-		return judge_note_index;
+		Note_made_list[Create_add_note_made_index] = made_Note;
+		
+
 	}
 
-
-
-
-	public void Add_judge_note_index()
-	{
-		judge_note_index++;
-	}
-
-
-
-	public void Add_cache_arrow_index()
-	{
-		cache_arrow_index++;
-	}
 }

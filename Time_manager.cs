@@ -18,10 +18,11 @@ public class Time_manager : MonoBehaviour
 
 	System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
-	//void Start()
-	//{
-	//	Start_stopwatch();
-	//}
+	void Start()
+	{
+		Set_adjustTime(-2);
+		//Start_stopwatch();
+	}
 
 	// Update is called once per frame
 	void Update()

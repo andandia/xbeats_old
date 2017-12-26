@@ -22,7 +22,7 @@ public class Play_controller : MonoBehaviour {
 	//仕方なくここでやってるけどもっと適切なクラスがあればそこでやるべき
 	void Time_adjust()
 	{
-		double time = Data_cabinet.notes_List[0].startTime - pull_time;
+		double time = Data_cabinet.Note_data_list[0].startTime - pull_time;
 		Time_manager.Set_adjustTime(time);
 	}
 }

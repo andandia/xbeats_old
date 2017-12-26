@@ -16,7 +16,7 @@ public class Note_maker : MonoBehaviour
 {
 	[SerializeField]	Time_manager Time;
 	[SerializeField]	Data_cabinet Dc;
-	[SerializeField] ObjectPool Op;
+	[SerializeField]	ObjectPoolSuper Ops;
 
 	void Start()
 	{
@@ -34,21 +34,21 @@ public class Note_maker : MonoBehaviour
 
 	void Note_make()
 	{
-		int make_index = Dc.Get_make_note_index();
-		if (make_index <= Dc.notes_List.Length-1)
+		if (Dc.Is_create_note_search())
 		{
-			if (Time.Get_time() >= Dc.notes_List[make_index].startTime && Dc.notes_List[make_index].alive == true)
+			if (Dc.Is_create_note())
 			{
-				Dc.notes_List[make_index].alive = false;
-				Op.Make_note(1);
-				if (Dc.notes_List[make_index].syncTimes > 0)
-				{
-						
-				}
-				Debug.Log("startTime " + Dc.notes_List[make_index].startTime);
-				Dc.Add_make_note_index();
-				Debug.Log("time " + Time.Get_time());
-				Debug.Log("生成 ");
+				//Dc.Mark_Made_note(); //todo 要らなかったら消す
+				Ops.Make_note();
+				//if (Dc.Note_data_list[Dc.Get_Create_note_data_index()].syncTimes > 0)
+				//{
+
+				//}
+				
+				Debug_Note_info();//todo 後で消す
+				Dc.Inc_Create_note_data_index();
+				
+				
 				//何回も回ってしまいそうな気がする
 			}
 		}
@@ -57,6 +57,7 @@ public class Note_maker : MonoBehaviour
 /*
 stopwatchクラスは0秒始まりなのでstartTimeがマイナスだと反応してくれない。note_list側を補正するようにするか他の時間測定を考えるか
 しないといけない
+↑deltaTime使うようにしたが精度的にこれでいいか分からない
 */
 
 
@@ -65,7 +66,19 @@ stopwatchクラスは0秒始まりなのでstartTimeがマイナスだと反応�
 
 	}
 
-	
-
+	/// <summary>
+	/// デバッグ用ノート情報表示
+	/// </summary>
+	void Debug_Note_info()
+	{
+		Note_data note_data = Dc.Get_Create_note_data();
+		Debug.Log("/*-------------------*/");
+		Debug.Log("startTime " + note_data.startTime);
+		Debug.Log("steamTime " + note_data.steamTime);
+		Debug.Log("parfectTime " + note_data.parfectTime);
+		Debug.Log("time " + Time.Get_time());
+		Debug.Log("生成 ");
+		//Debug.Log("/*-------------------*/");
+	}
 
 }

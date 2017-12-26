@@ -12,9 +12,15 @@ public class fake_Dc : MonoBehaviour
 
 	public Tween[] tween = new Tween[10];
 
+	public List<int> ObjID = new List<int>();//めんどいのでlist
+	//public int[] ObjID = new int[10];
+
 	int TweenCount = 0;
 
 	int judgeCount = 0;
+
+
+	int objIDcount = 0;
 
 
 	public void IncMakeCount()
@@ -41,6 +47,19 @@ public class fake_Dc : MonoBehaviour
 	}
 
 
+
+	public int GetobjIDcount()
+	{
+		return objIDcount;
+	}
+
+
+
+	public void IncobjIDcount()
+	{
+		objIDcount++;
+	}
+
 	public int GetjudgeCount()
 	{
 		Debug.Log("judgeCount " + judgeCount);
@@ -65,5 +84,12 @@ public class fake_Dc : MonoBehaviour
 		Tween returntween = tween[judgeCount];
 		Debug.Log("returntween " + returntween);
 		return returntween;
+	}
+
+
+	public void InsertObjID(int InsertID)
+	{
+		ObjID.Add(InsertID);
+
 	}
 }
