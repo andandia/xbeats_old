@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Music_load : MonoBehaviour {
+public class Music_load : MonoBehaviour
+{
 
 	[SerializeField] AudioSource audioSource;
 	[SerializeField] AudioClip audioClip;
@@ -11,54 +12,30 @@ public class Music_load : MonoBehaviour {
 	[SerializeField] string song_dir;
 	[SerializeField] string song_file_name1;
 
+	/// <summary>
+	/// 音源再生を待つ時間
+	/// </summary>
+	[SerializeField] float wait_time;
+
 	const string _FILE_HEADER = "file:///";
 
 
 	// Use this for initialization
-	void Start () { //todo後で消す
-		Load_music();
-	}
-	
-	void Load_music ()
+	//void Start ()
+	//{ //todo後で消す
+	//	Load_music();
+	//}
+
+	public void Load_music()
 	{
 		string file_path = file_Load.Filepath_decide(0 , song_dir , song_file_name1);
-
-		//LoadSound(file_path);
-
-		/*
-		WWW www = new WWW(file_path);
-		audioClip = www.GetAudioClip(true,true);
-		audioSource.clip = audioClip;
-		audioSource.Play();
 		
-		Debug.Log(file_path);
-		*/
-
-
-		StartCoroutine(StreamPlayAudioFile(file_path));
-		//StreamPlayAudioFile(file_path);
+		StartCoroutine(LoadSound(file_path));
 	}
 
 
-	IEnumerator StreamPlayAudioFile ( string file_path )
-	{
-		//ソース指定し音楽流す
-		//音楽ファイルロード
-		using (WWW www = new WWW("file:///" + file_path))
-		//using (WWW www = new WWW(file_path))
-		{
-			//読み込み完了まで待機
-			yield return www;
-
-			audioSource.clip = www.GetAudioClip(true , true);
-
-			audioSource.Play();
-		}
-	}
-
-
-
-	/*
+	/*Source https://goo.gl/T685hK
+	*/
 	private IEnumerator LoadSound ( string path )
 	{
 		// ファイルが無かったら終わる
@@ -78,7 +55,7 @@ public class Music_load : MonoBehaviour {
 		}
 
 		// 読み込んだファイルからAudioClipを取り出す
-		AudioClip audioTrack = request.GetAudioClip(false , true);
+		AudioClip audioTrack = request.GetAudioClip(false , false);
 		while (audioTrack.loadState == AudioDataLoadState.Loading)
 		{
 			// ロードが終わるまで待つ
@@ -92,16 +69,22 @@ public class Music_load : MonoBehaviour {
 			yield break;
 		}
 
-		// AudioSourceを生成し、gameobjectに追加する
-		AudioSource source = gameObject.AddComponent<AudioSource>();
+		// 読み込んだAudioClicpを設定する
+		audioSource.clip = audioTrack;
 
-		// 生成したsourceに読み込んだAudioClicpを設定する
-		source.clip = audioTrack;
+
+		yield return new WaitForSeconds(wait_time);  //10秒待つ
 
 		// 読み込んだファイルを再生する
-		source.Play();
+		audioSource.Play();
 
 		yield return 0;
 	}
-	*/
+
+
+
+
+
+
+	
 }

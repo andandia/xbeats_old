@@ -65,6 +65,7 @@ public class File_load : MonoBehaviour
 						{
 							filepath = externalFilesDir.Call<string>("getCanonicalPath");
 							//Debug.Log("filepath " + filepath);
+							//基本的に内部SD/Android/data/com.xbeats/が返ってくる
 						}
 					}
 				}

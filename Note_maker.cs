@@ -14,25 +14,25 @@ using UnityEngine;
 
 public class Note_maker : MonoBehaviour
 {
-	[SerializeField]	Time_manager Time;
-	[SerializeField]	Data_cabinet Dc;
-	[SerializeField]	ObjectPoolSuper Ops;
+	[SerializeField] Time_manager Time;
+	[SerializeField] Data_cabinet Dc;
+	[SerializeField] ObjectPoolSuper Ops;
 
-	void Start()
+	void Start ()
 	{
 
 	}
 
 
 
-	void Update()
+	void Update ()
 	{
 		Note_make();
 	}
 
 
 
-	void Note_make()
+	void Note_make ()
 	{
 		if (Dc.Is_create_note_search())
 		{
@@ -44,21 +44,21 @@ public class Note_maker : MonoBehaviour
 				//{
 
 				//}
-				
+
 				Debug_Note_info();//todo 後で消す
 				Dc.Inc_Create_note_data_index();
-				
-				
+
+
 				//何回も回ってしまいそうな気がする
 			}
 		}
 
 
-/*
-stopwatchクラスは0秒始まりなのでstartTimeがマイナスだと反応してくれない。note_list側を補正するようにするか他の時間測定を考えるか
-しないといけない
-↑deltaTime使うようにしたが精度的にこれでいいか分からない
-*/
+		/*
+		stopwatchクラスは0秒始まりなのでstartTimeがマイナスだと反応してくれない。note_list側を補正するようにするか他の時間測定を考えるか
+		しないといけない
+		↑deltaTime使うようにしたが精度的にこれでいいか分からない
+		*/
 
 
 
@@ -69,7 +69,7 @@ stopwatchクラスは0秒始まりなのでstartTimeがマイナスだと反応�
 	/// <summary>
 	/// デバッグ用ノート情報表示
 	/// </summary>
-	void Debug_Note_info()
+	void Debug_Note_info ()
 	{
 		Note_data note_data = Dc.Get_Create_note_data();
 		Debug.Log("/*-------------------*/");

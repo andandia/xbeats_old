@@ -534,9 +534,9 @@ public class Score_load : MonoBehaviour
 			noteType = 2;//ホールド
 		}
 		Dc.Note_data_list[dc_note_list_index].noteType       = noteType;
-		Dc.Note_data_list[dc_note_list_index].startTime      = temp_start_time;
+		Dc.Note_data_list[dc_note_list_index].startTime      = temp_start_time + Sd.offset;   //temp_start_time + Sd.offset
 		Dc.Note_data_list[dc_note_list_index].steamTime      = (float)note_steam_time;
-		Dc.Note_data_list[dc_note_list_index].parfectTime    = temp_note_time;
+		Dc.Note_data_list[dc_note_list_index].parfectTime    = temp_note_time + Sd.offset;
 		Dc.Note_data_list[dc_note_list_index].note_end_pos.x = (float)temp_note_pos[0];
 		Dc.Note_data_list[dc_note_list_index].note_end_pos.y = (float)temp_note_pos[1];
 		Dc.Note_data_list[dc_note_list_index].note_pos1.x    = (float)temp_note_pos[2];
@@ -562,6 +562,8 @@ public class Score_load : MonoBehaviour
 			dc_note_list_index++;
 		}
 
+		//Debug_note_data_show();
+
 	}
 
 	/// <summary>
@@ -581,4 +583,30 @@ public class Score_load : MonoBehaviour
 			up_to_time = uti;
 		}
 	}
+
+
+	void Debug_note_data_show ()
+	{
+		Debug.Log("startTime " +  Dc.Note_data_list[dc_note_list_index].startTime);
+		Debug.Log("steamTime " + Dc.Note_data_list[dc_note_list_index].steamTime);
+		Debug.Log("parfectTime " + Dc.Note_data_list[dc_note_list_index].parfectTime);
+		Debug.Log("note_end_pos.x " + Dc.Note_data_list[dc_note_list_index].note_end_pos.x);
+		Debug.Log("note_end_pos.y " + Dc.Note_data_list[dc_note_list_index].note_end_pos.y);
+		Debug.Log("note_pos1.x " + Dc.Note_data_list[dc_note_list_index].note_pos1.x);
+		Debug.Log("note_pos1.y " + Dc.Note_data_list[dc_note_list_index].note_pos1.y);
+		Debug.Log("note_pos2.x " + Dc.Note_data_list[dc_note_list_index].note_pos2.x);
+		Debug.Log("note_pos2.y " + Dc.Note_data_list[dc_note_list_index].note_pos2.y);
+		Debug.Log("note_pos3.x " + Dc.Note_data_list[dc_note_list_index].note_pos3.x);
+		Debug.Log("note_pos3.y " + Dc.Note_data_list[dc_note_list_index].note_pos3.y);
+		Debug.Log("note_pos4.x " + Dc.Note_data_list[dc_note_list_index].note_pos4.x);
+		Debug.Log("note_pos4.y " + Dc.Note_data_list[dc_note_list_index].note_pos4.y);
+		Debug.Log("endCnt " + Dc.Note_data_list[dc_note_list_index].endCnt);
+		Debug.Log("rotation " + Dc.Note_data_list[dc_note_list_index].rotation);
+		Debug.Log("flickAngle " + Dc.Note_data_list[dc_note_list_index].flickAngle);
+		Debug.Log("startTime " + Dc.Note_data_list[dc_note_list_index].startTime);
+		Debug.Log("syncTimes " + Dc.Note_data_list[dc_note_list_index].syncTimes);
+		Debug.Log("alive " + Dc.Note_data_list[dc_note_list_index].alive);
+		Debug.Log("made " + Dc.Note_data_list[dc_note_list_index].made);
+	}
+
 }

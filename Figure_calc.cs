@@ -29,18 +29,18 @@ public class Figure_calc : MonoBehaviour
 	private Note_line note_line;
 
 	//type1 タッチ、type2　ホールド
-	public void Main_figure_calc(int type, double rotation, int positionIndex, double freeX, double freeY)
+	public void Main_figure_calc(int notetype, double rotation, int positionIndex, double freeX, double freeY)
 	{//type=1：タッチノート 2:ホールドノート
-		Screen_width_setup();//デバッグ用にここに置いておく
+		Screen_width_setup();//todo デバッグ用にここに置いておく,本当はstartとかでやるべき(この処理は1度でいい)
 		Convert_worldpos(positionIndex, freeX, freeY);
 		if (rotation % 90 == 0)
 		{
-			Lpos_decide(type, rotation);
+			Lpos_decide(notetype, rotation);
 		}
 		else
 		{
 			Angle_calc(rotation);
-			Pos_decide(type, rotation);
+			Pos_decide(notetype, rotation);
 		}
 		/*実際の流れ
 		Screen_width_setup();で画面サイズ類を定義
@@ -79,33 +79,38 @@ public class Figure_calc : MonoBehaviour
 		double pos_x = 0;
 		double pos_y = 0;
 		int abs_x = 0;
-		int abs_y = 0; //xyの絶対位置、例えば1と8のxは同じ2になる
+		int abs_y = 0; //xyの絶対位置、例えば1と8のxは同じ値を示す
+		positionIndex = positionIndex + 1;//下記参照。
 
-		if (freeX == -1 && freeY == -1)//freeXYはNull_rejectによって-1にしている
+		if (freeX == -1 && freeY == -1)//free以外のとき(freeXYはNull_rejectによって-1にしている)
 		{
-			/*xの出し方
-			 * positionIndex+1を7から順番に割って余りが出ない数
-			 *
-			 * ↑これじゃダメ
-			 * その行の端は7*行-1で出せるのでそこからの距離で出せないか
-			 * 11だったら端は7*2-1で13になって13-11=2で7-2=5番目
-				以下のソースはその行の先頭を出してそこからの距離で判断している。
-			 * yの出し方
-				1行目の先頭と2行目の先頭を出して、
-				1行目の先頭以上2行目の先頭未満であれば1行目、のようにして判断する
-			 *
-			 以下はxとyが同時に出せることが分かったためそのようにしている
+			/*
+			まず考え方としてPxbpのPOSITIONを1から35までにする。
+			こうすることで各行最初のpositionは(行*7-6)で求められるようになる。
+			そしてそれに合わせるためにpositionIndexを+1している。
+			1行(横)を単位として見る(for文)
+			positionIndexがその行の範囲内だったら
+			positionIndexが7の倍数の場合は右端として7を、
+			そうでない場合positionIndexを7で割ったあまりを
+			指定している。
 			 */
-			for (int value = 1; value < 5; value++)
+			for (int line = 1; line < 5; line++)
 			{
-				if (positionIndex > 7 * (value - 1) && positionIndex < 7 * value)
+				if (positionIndex >= (line * 7 - 6) && positionIndex < ( (line + 1) * 7 - 6 ) )
 				{
-					abs_x = (positionIndex - 7 * (value - 1)) + 1;
-					abs_y = value;
+					if (positionIndex % 7 == 0)
+					{
+						abs_x = 7;
+					}
+					else
+					{
+						abs_x = positionIndex % 7;
+					}
+					abs_y = line;
 				}
-				//Debug.Log("abs_x " + abs_x);
-				//Debug.Log("abs_y " + abs_y);
 			}
+				//Debug.Log("positionIndex " + positionIndex + " abs_x " + abs_x);
+				//Debug.Log("positionIndex " + positionIndex + " abs_y " + abs_y);
 			pos_x = display_size.note_pos_xMin - (display_size.pos_unit_x * abs_x);
 			pos_y = display_size.note_pos_yMax - (display_size.pos_unit_y * abs_y);
 		}
@@ -315,7 +320,7 @@ public class Figure_calc : MonoBehaviour
 	}
 
 	/*------------------直角時-----------------------*/
-	void Lpos_decide(int type, double rotation)
+	void Lpos_decide(int notetype, double rotation)
 	{
 		/*タイプで分ける
 		 * ・通常の場合
@@ -329,7 +334,7 @@ public class Figure_calc : MonoBehaviour
 		 * ・ホールドの場合
 		 * 上下左右全て
 		 */
-		if (type == 1)
+		if (notetype == 1)
 		{
 			if (rotation == 0)
 			{

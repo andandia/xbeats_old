@@ -11,7 +11,7 @@ public class Data_cabinet : MonoBehaviour
 	 * indexの取得、増加→Get_(対象)、Inc_(対象)
 	*/
 	[SerializeField] Time_manager Time;
-
+	[SerializeField] AudioSource audioSource;
 
 	public Note_data[] Note_data_list;
 	public Made_note[] Note_made_list;
@@ -63,7 +63,8 @@ public class Data_cabinet : MonoBehaviour
 	public bool Is_create_note_search()
 	{
 		bool search = false;
-		if (Create_get_note_data_index <= Note_data_list.Length - 1)
+		if (audioSource.isPlaying == true &&
+				Create_get_note_data_index <= Note_data_list.Length - 1)
 		{
 			search = true;
 		}
@@ -78,7 +79,8 @@ public class Data_cabinet : MonoBehaviour
 	public bool Is_create_note()
 	{
 		bool create = false;
-		if (Time.Get_time() >= Note_data_list[Create_get_note_data_index].startTime &&
+		if (audioSource.isPlaying == true &&
+				Time.Get_time() >= Note_data_list[Create_get_note_data_index].startTime &&
 				Note_data_list[Create_get_note_data_index].made == false)
 		{
 			create = true;
