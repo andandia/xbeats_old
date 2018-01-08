@@ -7,6 +7,8 @@ public class Time_manager : MonoBehaviour
 
 	[SerializeField] AudioSource audioSource;
 
+
+
 	/// <summary>
 	/// 現在の時間
 	/// </summary>

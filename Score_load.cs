@@ -66,6 +66,7 @@ public class Score_load : MonoBehaviour
 		temp_note_pos = new double[10];
 		long_list = new Long_struct[3];//本来はレーンの数にするべき
 		Dc.ToCreate_note_data_List(Sd.note_List.Length);
+		Dc.ToCreate_note_made_List(Sd.note_List.Length);
 		Area_pointer();
 	}
 
@@ -536,7 +537,7 @@ public class Score_load : MonoBehaviour
 		Dc.Note_data_list[dc_note_list_index].noteType       = noteType;
 		Dc.Note_data_list[dc_note_list_index].startTime      = temp_start_time + Sd.offset;   //temp_start_time + Sd.offset
 		Dc.Note_data_list[dc_note_list_index].steamTime      = (float)note_steam_time;
-		Dc.Note_data_list[dc_note_list_index].parfectTime    = temp_note_time + Sd.offset;
+		Dc.Note_data_list[dc_note_list_index].parfectTime    = (float)( temp_note_time + Sd.offset);
 		Dc.Note_data_list[dc_note_list_index].note_end_pos.x = (float)temp_note_pos[0];
 		Dc.Note_data_list[dc_note_list_index].note_end_pos.y = (float)temp_note_pos[1];
 		Dc.Note_data_list[dc_note_list_index].note_pos1.x    = (float)temp_note_pos[2];
@@ -555,7 +556,7 @@ public class Score_load : MonoBehaviour
 		Dc.Note_data_list[dc_note_list_index].rotation       = (-1) * (float)Sd.note_List[dc_note_list_index].rotation;//todo *-1で影響ないか
 		Dc.Note_data_list[dc_note_list_index].flickAngle     = 0;//todo 角度を8方角にするメソッドを作る
 		Dc.Note_data_list[dc_note_list_index].syncTimes      = temp_sync_notes;
-		Dc.Note_data_list[dc_note_list_index].alive          = true;
+		Dc.Note_data_list[dc_note_list_index].judged         = false;
 		Dc.Note_data_list[dc_note_list_index].made					 = false;
 		if (Dc.Note_data_list.Length - 1 != dc_note_list_index)
 		{
@@ -605,7 +606,7 @@ public class Score_load : MonoBehaviour
 		Debug.Log("flickAngle " + Dc.Note_data_list[dc_note_list_index].flickAngle);
 		Debug.Log("startTime " + Dc.Note_data_list[dc_note_list_index].startTime);
 		Debug.Log("syncTimes " + Dc.Note_data_list[dc_note_list_index].syncTimes);
-		Debug.Log("alive " + Dc.Note_data_list[dc_note_list_index].alive);
+		Debug.Log("alive " + Dc.Note_data_list[dc_note_list_index].judged);
 		Debug.Log("made " + Dc.Note_data_list[dc_note_list_index].made);
 	}
 

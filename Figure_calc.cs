@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// ノートの位置、角度計算スクリプト
+/// </summary>
 public class Figure_calc : MonoBehaviour
 {
 	//transform.SetPositionAndRotation(Vector3, Quaternion);
@@ -28,7 +31,14 @@ public class Figure_calc : MonoBehaviour
 	private Display_size display_size;
 	private Note_line note_line;
 
-	//type1 タッチ、type2　ホールド
+	/// <summary>
+	/// メインメソッド。ここに投げると計算してくれる。
+	/// </summary>
+	/// <param name="notetype">1はタッチ、フリック、2はホールド</param>
+	/// <param name="rotation"></param>
+	/// <param name="positionIndex"></param>
+	/// <param name="freeX"></param>
+	/// <param name="freeY"></param>
 	public void Main_figure_calc(int notetype, double rotation, int positionIndex, double freeX, double freeY)
 	{//type=1：タッチノート 2:ホールドノート
 		Screen_width_setup();//todo デバッグ用にここに置いておく,本当はstartとかでやるべき(この処理は1度でいい)
@@ -94,7 +104,7 @@ public class Figure_calc : MonoBehaviour
 			そうでない場合positionIndexを7で割ったあまりを
 			指定している。
 			 */
-			for (int line = 1; line < 5; line++)
+			for (int line = 1; line < 6 ; line++)
 			{
 				if (positionIndex >= (line * 7 - 6) && positionIndex < ( (line + 1) * 7 - 6 ) )
 				{

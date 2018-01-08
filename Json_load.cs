@@ -49,7 +49,7 @@ public class Json_load : MonoBehaviour {
     public void Insert_notes_List()
     {
         Score_data.offset = (-1) * jsons["offset"].AsDouble;
-        Debug.Log(Score_data.offset);
+        //Debug.Log(Score_data.offset);
         Score_data.make_notes_List(jsons["notes"].Count);
         for (int i = 0; i < jsons["notes"].Count; i++)
         {

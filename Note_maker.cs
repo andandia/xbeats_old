@@ -38,27 +38,25 @@ public class Note_maker : MonoBehaviour
 		{
 			if (Dc.Is_create_note())
 			{
-				//Dc.Mark_Made_note(); //todo 要らなかったら消す
+				Dc.Mark_Made_note();
 				Ops.Make_note();
-				//if (Dc.Note_data_list[Dc.Get_Create_note_data_index()].syncTimes > 0)
+				//int syncTimes = Dc.Note_data_list[Dc.Get_Create_note_data_index()].syncTimes;
+				//if (syncTimes > 0)
 				//{
-
+				//	for (int i = 0; i < syncTimes; i++)
+				//	{
+				//		Dc.Mark_Made_note();
+				//		Ops.Make_note();
+				//	}
 				//}
 
-				Debug_Note_info();//todo 後で消す
+				//Debug_Note_info();//todo 後で消す
 				Dc.Inc_Create_note_data_index();
 
 
-				//何回も回ってしまいそうな気がする
+				
 			}
 		}
-
-
-		/*
-		stopwatchクラスは0秒始まりなのでstartTimeがマイナスだと反応してくれない。note_list側を補正するようにするか他の時間測定を考えるか
-		しないといけない
-		↑deltaTime使うようにしたが精度的にこれでいいか分からない
-		*/
 
 
 

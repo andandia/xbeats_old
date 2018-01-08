@@ -6,10 +6,9 @@ public struct Note_data
 	public double
 		noteType,
 		startTime,
-		parfectTime,
 		endCnt;		
 
-	public float steamTime,rotation;
+	public float steamTime,rotation, parfectTime;
 
 	public Vector3
 		note_end_pos,
@@ -23,7 +22,7 @@ public struct Note_data
 		syncTimes;
 
 	public bool
-		alive,
+		judged,
 		made;
 
 
@@ -48,14 +47,14 @@ public struct Note_data
 	/// <param name="rotation"></param>
 	/// <param name="flickAngle"></param>
 	/// <param name="syncTimes"></param>
-	/// <param name="alive"></param>
+	/// <param name="judged"></param>
 	/// <param name="made">ノートを作ったか。trueで作成済み</param>
 	public Note_data
-			(double noteType, double startTime, float steamTime, double parfectTime,
+			(double noteType, double startTime, float steamTime, float parfectTime,
 			float nepX, float nepY,
 			float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
 			double endCnt, float rotation, int flickAngle, int syncTimes,
-			bool alive, bool made
+			bool judged, bool made
 			)
 	{
 		this.noteType = noteType;
@@ -71,7 +70,7 @@ public struct Note_data
 		this.rotation = rotation;
 		this.flickAngle = flickAngle;
 		this.syncTimes = syncTimes;
-		this.alive = alive;
+		this.judged = judged;
 		this.made = made;
 	}
 }

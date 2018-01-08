@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;//bmsファイルを読むのに必要
+using System.IO;//ファイルを読むのに必要
 using System.Text;//ファイルのエンコード指定に必要
 using UnityEngine;
 
@@ -11,21 +11,22 @@ public class File_load : MonoBehaviour
 	*/
 
 	/// <summary>
-	/// ファイルパスを返す
+	/// フォルダパスを返す
 	/// </summary>
-	/// <param name="type">ファイル種類、0が譜面用、1が設定ファイル用</param>
-	/// <param name="filename">ファイル名(拡張子必須)</param>
+	/// <param name="filetype">0,1が譜面、音源用、2が設定ファイル用</param>
+	/// <param name="folder_name"></param>
+	/// <param name="file_name">拡張子必須。</param>
 	/// <returns></returns>
-	public string Filepath_decide ( int type , string folder_name , string file_name )
+	public string Filepath_decide ( int filetype , string folder_name , string file_name )
 	{
 		string basic_path = Return_basic_path();
 		string filepath = null;
 
-		if (type == 0 || type == 1)//譜面、音源用
+		if (filetype == 0 || filetype == 1)//譜面、音源用
 		{
 			filepath = basic_path + "/Songs/" + folder_name + "/" + file_name;
 		}
-		else if (type == 2)//設定ファイル用
+		else if (filetype == 2)//設定ファイル用
 		{
 
 		}
