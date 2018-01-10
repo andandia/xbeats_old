@@ -33,22 +33,8 @@ public class Judge : MonoBehaviour {
 	/// </summary>
 	/// <param name="touchtime"></param>
 	/// <param name="touchPos"></param>
-	public void Main_judge (int touchCount , Touch_Manager.My_touch[] my_Touch)
+	public void Main_judge (float touchtime, Vector2 touchPos )
 	{
-		note_Data = Dc.Get_Judge_note_data();
-		Dc.Inc_Judge_get_note_data_index();
-		for (int i = 0; i < touchCount; i++)
-		{
-			if (is_touch_within_range(my_Touch[i].touchPos))
-			{
-				Time_judge(my_Touch[i].touchTime);
-			}
-		}
-
-
-
-
-		/*
 		Debug.Log("touchPos " + touchPos);
 		note_Data = Dc.Get_Judge_note_data();
 		Dc.Inc_Judge_get_note_data_index();
@@ -56,7 +42,6 @@ public class Judge : MonoBehaviour {
 		{
 			Time_judge(touchtime);
 		}
-		*/
 
 	}
 
@@ -87,7 +72,7 @@ public class Judge : MonoBehaviour {
 	void Time_judge (float touchtime)
 	{
 		float lag = Mathf.Abs(note_Data.parfectTime - touchtime);
-		//Debug.Log("note_Data.parfectTime " + note_Data.parfectTime + " touchtime " + touchtime);
+		Debug.Log("note_Data.parfectTime " + note_Data.parfectTime + " touchtime " + touchtime);
 		if (lag <= perfectTime)
 		{
 			
@@ -115,7 +100,7 @@ public class Judge : MonoBehaviour {
 		}
 		else//判定時間外
 		{
-			//Debug.Log("None…");
+			Debug.Log("None…");
 			ops.DestroyNote();
 		}
 	}

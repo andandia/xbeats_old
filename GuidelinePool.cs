@@ -64,8 +64,7 @@ Made_noteに格納
 				Set_Guideline_property(obj);
 				obj.SetActive(true);
 				Set_made_note_Property(obj.GetInstanceID());
-				//Debug.Log("make GetInstanceID " + obj.GetInstanceID());
-				return ; //このメソッドを終了
+				break;
 			}
 		}
 
@@ -80,7 +79,7 @@ Made_noteに格納
 		//リストに追加
 		pooledGuideline.Add(newObj);
 		Set_made_note_Property(newObj.GetInstanceID());
-		//Debug.Log("make GetInstanceID " + newObj.GetInstanceID());
+
 	}
 
 
@@ -89,17 +88,9 @@ Made_noteに格納
 
 
 	//これがDestroyの代わりを果たすMake
-	public void GuideDestoy()
+	public void releaseBall(GameObject obj)
 	{
-		foreach (GameObject obj in pooledGuideline)
-		{
-			//Debug.Log("des GetInstanceID " + obj.GetInstanceID());
-			if (obj.GetInstanceID() == ops.made_Note.guide_line_id)
-			{
-				obj.SetActive(false);
-				break;
-			}
-		}
+		obj.SetActive(false);
 	}
 
 

@@ -22,7 +22,7 @@ public class ObjectPoolSuper : MonoBehaviour {
 		guidelinePool.Make_Guideline();
 		arrowPool.Make_arrow(1);
 
-		Add_Note_made_list();
+		//Add_Note_made_list();
 	}
 
 
@@ -36,16 +36,6 @@ public class ObjectPoolSuper : MonoBehaviour {
 	void Add_Note_made_list ()
 	{
 		Dc.Add_Note_made_list(made_Note);
-	}
-
-
-	public void DestroyNote ()
-	{
-		made_Note = Dc.Get_judge_made_note();
-		guidelinePool.GuideDestoy();
-		arrowPool.ArrowDestoy();
-		Dc.Set_judge_note_data_judged();
-		Dc.Inc_Judge_get_note_made_index();
 	}
 
 }

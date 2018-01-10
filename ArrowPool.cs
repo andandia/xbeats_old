@@ -72,7 +72,7 @@ Made_noteに格納
 				Set_made_note_Property(obj.GetInstanceID(), tween);
 				//オブジェクトを返す
 				//return obj;
-				return;
+				break;
 			}
 		}
 
@@ -100,17 +100,9 @@ Made_noteに格納
 
 
 	//これがDestroyの代わりを果たすMake
-	public void ArrowDestoy( )
+	public void releaseBall(GameObject obj)
 	{
-		foreach (GameObject obj in pooledArrow)
-		{
-			//Debug.Log("des GetInstanceID " + obj.GetInstanceID());
-			if (obj.GetInstanceID() == ops.made_Note.arrow_id_1)
-			{
-				obj.SetActive(false);
-				break;
-			}
-		}
+		obj.SetActive(false);
 	}
 
 
