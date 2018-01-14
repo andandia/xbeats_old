@@ -19,12 +19,13 @@ public struct Note_data
 
 	public int
 		flickAngle,
-		syncTimes;
+		syncTimes,
+		made_note_list_index;
 
 	public bool
 		judged,
 		made;
-
+	
 
 	/// <summary>
 	/// 
@@ -50,11 +51,11 @@ public struct Note_data
 	/// <param name="judged"></param>
 	/// <param name="made">ノートを作ったか。trueで作成済み</param>
 	public Note_data
-			(double noteType, double startTime, float steamTime, float parfectTime,
-			float nepX, float nepY,
-			float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4,
-			double endCnt, float rotation, int flickAngle, int syncTimes,
-			bool judged, bool made
+			( double noteType , double startTime , float steamTime , float parfectTime ,
+			float nepX , float nepY ,
+			float x1 , float y1 , float x2 , float y2 , float x3 , float y3 , float x4 , float y4 ,
+			double endCnt , float rotation , int flickAngle , int syncTimes ,
+			bool judged , bool made
 			)
 	{
 		this.noteType = noteType;
@@ -72,7 +73,8 @@ public struct Note_data
 		this.syncTimes = syncTimes;
 		this.judged = judged;
 		this.made = made;
-	}
+		this.made_note_list_index = 0;
+}
 }
 
 /*

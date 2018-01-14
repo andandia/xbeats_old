@@ -1,110 +1,55 @@
-﻿using GodTouches;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using TouchScript.Gestures.TransformGestures;
 using UnityEngine;
+using Lean.Touch;
 
 public class Touch_Manager : MonoBehaviour {
 
 	[SerializeField] Judge judge;
 	[SerializeField] Time_manager time_Manager;
 
-	Touch touch;
-	My_touch[] my_Touch = new My_touch[3];
 
-	void Update ()
+	My_touch my_Touch = new My_touch();
+
+
+	[SerializeField] debug_disp_info debug_Disp_Info;
+
+	void OnEnable ()
 	{
-		Main_touch_process();
+		LeanTouch.OnFingerDown += TouchBegan;
 	}
 
-
-	void Main_touch_process ()
+	void OnDisable ()
 	{
+		LeanTouch.OnFingerDown -= TouchBegan;
 		
-		if (Input.touchCount > 0)
-		{
-			float touchTime = 0;
-			for (int i = 0; i < Input.touchCount; i++)
-			{
-				touch = Input.GetTouch(i);
-				switch (touch.phase)
-				{
-					
-					case TouchPhase.Began:
-						Debug.Log("TouchPhase.Began " + touch.fingerId);
-						if (i == 0)//初回のみ
-						{
-							touchTime = time_Manager.Get_time();//同時押し常に同じになるように
-						}
-						Set_My_touch(touchTime , touch);
-						break;
-					default:
-						Debug.Log("touch.phase " + touch.phase + " " + touch.fingerId);
-						break;
-				}
-			}
-			if (touchTime != 0)
-			//note 条件の目的:TouchPhase.Began以外の場合では判定に飛ばさないようにしたかった
-			//条件の理由:TouchPhase.Beganを通っていれば必ずtouchTimeは0以外になるため
-			{
-				TouchBegan(Input.touchCount);
-			}
-			Debug.Log("---------------------------");
-		}
-
-#if UNITY_EDITOR
-		if (Input.GetMouseButtonDown(0))
-		{
-			TouchBegan(1);
-		}
-#endif
 	}
 
-	void Set_My_touch ( float touchTime , Touch touch )
+
+	void TouchBegan ( LeanFinger finger )
 	{
-		my_Touch[touch.fingerId].fingerID = touch.fingerId;
-		my_Touch[touch.fingerId].touchTime = touchTime;
-		my_Touch[touch.fingerId].touchPos = GetTouchWorldPos(touch);
+		//Debug.Log("b " + LeanTouch.Fingers.Count);
+		//for (int i = 0; i < LeanTouch.Fingers.Count; i++)
+		//{
+		//	Set_My_touch(time_Manager.Get_time() , finger);
+		//}
+		Set_My_touch(time_Manager.Get_time() , finger);
+		judge.Main_judge(1 , my_Touch);
 	}
 
 
-	void TouchBegan (int touchCount)
+	void Set_My_touch ( float touchTime , LeanFinger finger )
 	{
-		
-		judge.Main_judge(touchCount , my_Touch);
+		my_Touch.fingerID = finger.Index;
+		my_Touch.touchTime = touchTime;
+		my_Touch.touchPos = finger.GetStartWorldPosition(0);
+		Debug.Log("Set_My_touch " + my_Touch.touchPos);
 	}
 
 
 
-
-
-
-	Vector2 GetTouchWorldPos (Touch touch)
-	{
-		//Debug.Log("touchPos " + touch.position);
-		return Camera.main.ScreenToWorldPoint(touch.position);
-
-	}
 
 	
-
-
-
-
-#if UNITY_EDITOR
-	/*---下2つはマウス用--*/
-	void TouchBegan (long i)//引数はオーバーライドを適当にごまかすための要らない引数
-	{
-		//judge.Main_judge(time_Manager.Get_time() , GetTouchWorldPos(Input.mousePosition));
-	}
-
-	Vector2 GetTouchWorldPos ( Vector3 mousePos )
-	{
-		return Camera.main.ScreenToWorldPoint(mousePos);
-
-	}
-
-#endif
 
 
 	/// <summary>

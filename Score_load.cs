@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Score_load : MonoBehaviour
 {
@@ -33,6 +34,11 @@ public class Score_load : MonoBehaviour
 	private int note_list_index = 0;
 
 	/// <summary>
+	/// 今見るべきノートリストのインデックスのインクリメント
+	/// </summary>
+	private void Add_note_list_index () { note_list_index++; }
+
+	/// <summary>
 	/// 今見るべきBPMリストのインデックス
 	/// </summary>
 	private int bpm_list_index = 0;
@@ -44,7 +50,8 @@ public class Score_load : MonoBehaviour
 	private double note_steam_time = 0;
 
 
-	double HiSpeed = 1.0;//Todo 選曲画面から投げられるようにすべき
+	[SerializeField] double HiSpeed = 2.0;//Todo 選曲画面から投げられるようにすべき
+
 
 	//以下はノート構造体格納用の一次保管変数
 	private double temp_note_time;
@@ -57,19 +64,30 @@ public class Score_load : MonoBehaviour
 
 	private int temp_sync_notes;
 
-	private int dc_note_list_index = 0;
-
 	public Long_struct[] long_list;
 
-	public void Load_score()
+	/// <summary>
+	/// ここでのみ使う計算結果のnote_data_listを保存するための配列。
+	/// </summary>
+	List<Note_data> temp_note_data_list_line1 = new List<Note_data>();
+	List<Note_data> temp_note_data_list_line2 = new List<Note_data>();
+
+	/// <summary>
+	/// ロード時に最初に呼ばれる窓口になるメソッド。
+	/// </summary>
+	public void Main_Load_score()
 	{
 		temp_note_pos = new double[10];
 		long_list = new Long_struct[3];//本来はレーンの数にするべき
-		Dc.ToCreate_note_data_List(Sd.note_List.Length);
-		Dc.ToCreate_note_made_List(Sd.note_List.Length);
-		Area_pointer();
+	
+		Area_pointer();//ここを呼ぶと計算が行われ、temp_note_data_list群に全て結果が入る。
+		Transfer_temp_note_data_list();
 	}
 
+
+	/// <summary>
+	/// 今見るべき範囲を確定し、Area_pointer_common_calcへ飛ばす
+	/// </summary>
 	private void Area_pointer()
 	{
 		for (int bar = 1; Break_term(bar * note_resolution); bar++)//全ての小節を見る
@@ -123,7 +141,7 @@ public class Score_load : MonoBehaviour
 		//↓区間にノートが存在しているか
 		if (head_cnt <= Sd.note_List[note_list_index].count && Sd.note_List[note_list_index].count < foot_cnt)
 		{
-			for (; ; note_list_index++)
+			for (; ; Add_note_list_index())
 			{
 				int type = 1;
 				if (Sd.note_List[note_list_index].endCnt != 0)//ホールド
@@ -132,12 +150,12 @@ public class Score_load : MonoBehaviour
 				}
 				temp_note_time = Timing_calc(head_cnt, foot_cnt, area_one_cnt_time);
 				Long_calc(1, head_cnt, foot_cnt, area_one_cnt_time);
-				Fc.Main_figure_calc(type, Sd.note_List[note_list_index].rotation,
+				Fc.Main_figure_calc(type, Sd.note_List[note_list_index].rotation,//位置角度計算の呼び出し
 														Sd.note_List[note_list_index].positionIndex,
 														Sd.note_List[note_list_index].freeX,
 														Sd.note_List[note_list_index].freeY
 														);
-				temp_note_pos = Fc.Note_pos_result();
+				temp_note_pos = Fc.Get_Note_pos_result();//
 				Sync_note_search();
 				temp_start_time = Note_startTime_calc(Note_steamTime_calc());
 				Note_data_add();//全ての計算を終えて格納
@@ -148,7 +166,7 @@ public class Score_load : MonoBehaviour
 				}
 				else if (Sd.note_List[note_list_index + 1].count >= foot_cnt)//次のノートは次の区間になっている
 				{
-					note_list_index++;
+					Add_note_list_index();
 					break;
 				}
 			}
@@ -159,8 +177,12 @@ public class Score_load : MonoBehaviour
 
 
 
-
-	void Area_pointer_common_calc(int pattern, int bar)
+	/// <summary>
+	/// 区間のパターンに応じて1区間の時間と区間の1cntあたりの時間を出してNote_search、Long_calcへ飛ばす
+	/// </summary>
+	/// <param name="pattern">区間パターン</param>
+	/// <param name="bar">現在小節</param>
+	void Area_pointer_common_calc (int pattern, int bar)
 	{
 		//↓この2つで1区間(小節)の範囲を指定する
 		double head_cnt = 0;
@@ -261,6 +283,14 @@ public class Score_load : MonoBehaviour
 		return temp_note_time;
 	}
 
+
+	/// <summary>
+	/// ロングノートの計算を行う。
+	/// </summary>
+	/// <param name="mode">ノーツ処理中に呼び出す(1)か、区間を抜けるときに呼び出すか(2)</param>
+	/// <param name="head_cnt"></param>
+	/// <param name="foot_cnt">区間最後のcnt</param>
+	/// <param name="area_one_cnt_time">区間の1cntあたりの時間</param>
 	private void Long_calc(int mode, double head_cnt, double foot_cnt, double area_one_cnt_time)
 	{//todo このメソッドで用いてるup_to_timeは後に適切な名前に変える
 	 //todo ホールド時間の格納方法(ノートを見ている時点では時間は決まらない、LE開発のためにとりあえず放置
@@ -315,47 +345,29 @@ public class Score_load : MonoBehaviour
 	}
 
 
-
+	/// <summary>
+	/// 同時押しノートを探す
+	/// </summary>
 	void Sync_note_search()
 	{
-			temp_sync_notes = 0;
-		if (sync_notes_limiter == 0 && note_list_index <= Sd.note_List.Length - 1 - 2)//ラスト2ノート以外
+		temp_sync_notes = 0;
+		if (note_list_index != 0)//最初のノート以外
 		{
-			for (int i = 1; i < max_sync_notes; i++)
+			if (Sd.note_List[note_list_index].count == Sd.note_List[note_list_index - 1].count)
 			{
-				if (Sd.note_List[note_list_index].count == Sd.note_List[note_list_index + 1].count)
-				{
-					temp_sync_notes++;
-				}
-			}
-			sync_notes_limiter = temp_sync_notes;
-		}
-		else if (sync_notes_limiter == 0 && note_list_index == Sd.note_List.Length - 1 - 1)//ラスト2ノートのとき
-		{
-			if (Sd.note_List[note_list_index].count == Sd.note_List[note_list_index + 1].count)
-			{
-				temp_sync_notes++;
-				sync_notes_limiter = temp_sync_notes;
-			}
-		}
-		else
-		{
-			//temp_sync_notes = 1;
-			/*note temp_sync_notesの仕様について
-			 * 現状の仕様として同時押しノートグループの始まりにのみ同時押し個数が入り、その他ではとくに値は入らない。
-			 * これはノート生成時に同時押しグループの始まりであったらforとかで同時押し個数ぶんノートを一気に生成する
-			 * という仕組みにする予定なのでグループの始まり以外で入れても現状意味がない(と思っている)ため
-			*/
-			if (sync_notes_limiter != 0)
-			{
-				sync_notes_limiter--;
+				temp_sync_notes = 1;
 			}
 		}
 	}
 
+	/*-------------------------------以下補助使用メソッド---------------------------------------*/
 
 
-	//Area_pointer for文の条件判定式。長過ぎるので切り出した
+	/// <summary>
+	/// Area_pointer for文の条件判定式。長過ぎるので切り出した
+	/// </summary>
+	/// <param name="foot_cnt"></param>
+	/// <returns></returns>
 	private bool Break_term(int foot_cnt)
 	{
 		bool continues;
@@ -369,6 +381,7 @@ public class Score_load : MonoBehaviour
 		}
 		return continues;
 	}
+
 
 	/// <summary>
 	/// BPM変化があるか調べる
@@ -504,17 +517,26 @@ public class Score_load : MonoBehaviour
 	}
 
 
-
+	/// <summary>
+	/// 音符を流すのにかかる時間を計算
+	/// </summary>
+	/// <returns></returns>
 	double Note_steamTime_calc()
 	{
 		double Now_BPM = Sd.BPM_List[bpm_list_index].value;
 		double base_steam_time = 3;
 		double x; //基準bpmからの倍率
 		x = 100 / Now_BPM;
-		note_steam_time = base_steam_time * x * HiSpeed; //bpm100,HS1のとき3秒かけて流れる
+		note_steam_time = base_steam_time * x / HiSpeed; //bpm100,HS1のとき3秒かけて流れる
 		return note_steam_time;
 	}
 
+
+	/// <summary>
+	/// 音符を流し始める時間を計算
+	/// </summary>
+	/// <param name="steam_time"></param>
+	/// <returns></returns>
 	double Note_startTime_calc(double steam_time)
 	{
 		double temp_start_time;
@@ -522,50 +544,91 @@ public class Score_load : MonoBehaviour
 		return temp_start_time;
 	}
 
+	
+
 
 	private void Note_data_add()
 	{
+		Note_data note_Data = new Note_data();
 		int noteType = 0;//タッチ
-		if (Dc.Note_data_list[dc_note_list_index].flickAngle != 0)
+		if (Sd.note_List[note_list_index].flickAngle != 0)
 		{
 			noteType = 1;//フリック
 		}
-		else if (Dc.Note_data_list[dc_note_list_index].endCnt != 0)
+		else if (Sd.note_List[note_list_index].endCnt != 0)
 		{
 			noteType = 2;//ホールド
 		}
-		Dc.Note_data_list[dc_note_list_index].noteType       = noteType;
-		Dc.Note_data_list[dc_note_list_index].startTime      = temp_start_time + Sd.offset;   //temp_start_time + Sd.offset
-		Dc.Note_data_list[dc_note_list_index].steamTime      = (float)note_steam_time;
-		Dc.Note_data_list[dc_note_list_index].parfectTime    = (float)( temp_note_time + Sd.offset);
-		Dc.Note_data_list[dc_note_list_index].note_end_pos.x = (float)temp_note_pos[0];
-		Dc.Note_data_list[dc_note_list_index].note_end_pos.y = (float)temp_note_pos[1];
-		Dc.Note_data_list[dc_note_list_index].note_pos1.x    = (float)temp_note_pos[2];
-		Dc.Note_data_list[dc_note_list_index].note_pos1.y    = (float)temp_note_pos[3];
-		Dc.Note_data_list[dc_note_list_index].note_pos2.x    = (float)temp_note_pos[4];
-		Dc.Note_data_list[dc_note_list_index].note_pos2.y    = (float)temp_note_pos[5];
+		note_Data.noteType       = noteType;
+		note_Data.startTime      = temp_start_time + Sd.offset;   //temp_start_time + Sd.offset
+		note_Data.steamTime      = (float)note_steam_time;
+		note_Data.parfectTime    = (float)( temp_note_time + Sd.offset );
+		note_Data.note_end_pos.x = (float)temp_note_pos[0];
+		note_Data.note_end_pos.y = (float)temp_note_pos[1];
+		note_Data.note_pos1.x    = (float)temp_note_pos[2];
+		note_Data.note_pos1.y    = (float)temp_note_pos[3];
+		note_Data.note_pos2.x    = (float)temp_note_pos[4];
+		note_Data.note_pos2.y    = (float)temp_note_pos[5];
 
 		if (noteType == 2)
 		{
-			Dc.Note_data_list[dc_note_list_index].note_pos3.x  = (float)temp_note_pos[6];
-			Dc.Note_data_list[dc_note_list_index].note_pos3.y  = (float)temp_note_pos[7];
-			Dc.Note_data_list[dc_note_list_index].note_pos4.x  = (float)temp_note_pos[8];
-			Dc.Note_data_list[dc_note_list_index].note_pos4.y  = (float)temp_note_pos[9];
+			note_Data.note_pos3.x  = (float)temp_note_pos[6];
+			note_Data.note_pos3.y  = (float)temp_note_pos[7];
+			note_Data.note_pos4.x  = (float)temp_note_pos[8];
+			note_Data.note_pos4.y  = (float)temp_note_pos[9];
 		}
-		Dc.Note_data_list[dc_note_list_index].endCnt         = 0;//todo ホールド時間を入れる方法を考えたら修正
-		Dc.Note_data_list[dc_note_list_index].rotation       = (-1) * (float)Sd.note_List[dc_note_list_index].rotation;//todo *-1で影響ないか
-		Dc.Note_data_list[dc_note_list_index].flickAngle     = 0;//todo 角度を8方角にするメソッドを作る
-		Dc.Note_data_list[dc_note_list_index].syncTimes      = temp_sync_notes;
-		Dc.Note_data_list[dc_note_list_index].judged         = false;
-		Dc.Note_data_list[dc_note_list_index].made					 = false;
-		if (Dc.Note_data_list.Length - 1 != dc_note_list_index)
+		note_Data.endCnt         = 0;//todo ホールド時間を入れる方法を考えたら修正
+		note_Data.rotation       = ( -1 ) * (float)Sd.note_List[note_list_index].rotation;//todo *-1で影響ないか
+		note_Data.flickAngle     = 0;//todo 角度を8方角にするメソッドを作る
+		note_Data.syncTimes      = temp_sync_notes;
+		note_Data.judged         = false;
+		note_Data.made           = false;
+
+
+		switch (temp_sync_notes)//同時押しによって挿入先を変える
 		{
-			dc_note_list_index++;
+			case 0:
+				temp_note_data_list_line1.Add(note_Data);
+				//Debug_note_data_show(1 , note_Data);
+				break;
+			case 1:
+				temp_note_data_list_line2.Add(note_Data);
+				//Debug_note_data_show(2 , note_Data);
+				break;
+			case 3:
+				break;
+			default:
+				break;
+		}
+		
+	}
+
+	
+
+	/// <summary>
+	/// 譜面中のノートの計算終了後、Dcへとnote_data_listを受け渡すためのメソッド
+	/// </summary>
+	private void Transfer_temp_note_data_list ()
+	{
+		Dc.ToCreate_Note_data_list(temp_note_data_list_line1.Count , temp_note_data_list_line2.Count);
+		Dc.ToCreate_note_made_List(Sd.note_List.Length);//note_made_listのサイズは今のところ譜面中の全ノーツの数にしておく
+
+		for (int i = 0; i < temp_note_data_list_line1.Count; i++)
+		{
+			Dc.Note_data_list_line1[i] = temp_note_data_list_line1[i];
+			//Debug.Log(i);
+			//Debug_note_data_show(1 , temp_note_data_list_line1[i]);
 		}
 
-		//Debug_note_data_show();
+		for (int i = 0; i < temp_note_data_list_line2.Count; i++)
+		{
+			Dc.Note_data_list_line2[i] = temp_note_data_list_line2[i];
+			//Debug.Log(i);
+			//Debug_note_data_show(2 , temp_note_data_list_line2[i]);
+		}
 
 	}
+
 
 	/// <summary>
 	/// ロングノーツ計算のための構造体
@@ -585,29 +648,31 @@ public class Score_load : MonoBehaviour
 		}
 	}
 
-
-	void Debug_note_data_show ()
+	
+	void Debug_note_data_show (int line , Note_data note_Data)
 	{
-		Debug.Log("startTime " +  Dc.Note_data_list[dc_note_list_index].startTime);
-		Debug.Log("steamTime " + Dc.Note_data_list[dc_note_list_index].steamTime);
-		Debug.Log("parfectTime " + Dc.Note_data_list[dc_note_list_index].parfectTime);
-		Debug.Log("note_end_pos.x " + Dc.Note_data_list[dc_note_list_index].note_end_pos.x);
-		Debug.Log("note_end_pos.y " + Dc.Note_data_list[dc_note_list_index].note_end_pos.y);
-		Debug.Log("note_pos1.x " + Dc.Note_data_list[dc_note_list_index].note_pos1.x);
-		Debug.Log("note_pos1.y " + Dc.Note_data_list[dc_note_list_index].note_pos1.y);
-		Debug.Log("note_pos2.x " + Dc.Note_data_list[dc_note_list_index].note_pos2.x);
-		Debug.Log("note_pos2.y " + Dc.Note_data_list[dc_note_list_index].note_pos2.y);
-		Debug.Log("note_pos3.x " + Dc.Note_data_list[dc_note_list_index].note_pos3.x);
-		Debug.Log("note_pos3.y " + Dc.Note_data_list[dc_note_list_index].note_pos3.y);
-		Debug.Log("note_pos4.x " + Dc.Note_data_list[dc_note_list_index].note_pos4.x);
-		Debug.Log("note_pos4.y " + Dc.Note_data_list[dc_note_list_index].note_pos4.y);
-		Debug.Log("endCnt " + Dc.Note_data_list[dc_note_list_index].endCnt);
-		Debug.Log("rotation " + Dc.Note_data_list[dc_note_list_index].rotation);
-		Debug.Log("flickAngle " + Dc.Note_data_list[dc_note_list_index].flickAngle);
-		Debug.Log("startTime " + Dc.Note_data_list[dc_note_list_index].startTime);
-		Debug.Log("syncTimes " + Dc.Note_data_list[dc_note_list_index].syncTimes);
-		Debug.Log("alive " + Dc.Note_data_list[dc_note_list_index].judged);
-		Debug.Log("made " + Dc.Note_data_list[dc_note_list_index].made);
+		Debug.Log("insert line " + line);
+		//Debug.Log("startTime " +  note_Data.startTime);
+		//Debug.Log("steamTime " + note_Data.steamTime);
+		Debug.Log("parfectTime " + note_Data.parfectTime);
+		Debug.Log("note_end_pos.x " + note_Data.note_end_pos.x);
+		Debug.Log("note_end_pos.y " + note_Data.note_end_pos.y);
+		//Debug.Log("note_pos1.x " + note_Data.note_pos1.x);
+		//Debug.Log("note_pos1.y " + note_Data.note_pos1.y);
+		//Debug.Log("note_pos2.x " + note_Data.note_pos2.x);
+		//Debug.Log("note_pos2.y " + note_Data.note_pos2.y);
+		//Debug.Log("note_pos3.x " + note_Data.note_pos3.x);
+		//Debug.Log("note_pos3.y " + note_Data.note_pos3.y);
+		//Debug.Log("note_pos4.x " + note_Data.note_pos4.x);
+		//Debug.Log("note_pos4.y " + note_Data.note_pos4.y);
+		//Debug.Log("endCnt " + note_Data.endCnt);
+		//Debug.Log("rotation " + note_Data.rotation);
+		//Debug.Log("flickAngle " + note_Data.flickAngle);
+		//Debug.Log("startTime " + note_Data.startTime);
+		//Debug.Log("syncTimes " + note_Data.syncTimes);
+		//Debug.Log("alive " + note_Data.judged);
+		//Debug.Log("made " + note_Data.made);
+		Debug.Log("-------------------------------------");
 	}
-
+	
 }

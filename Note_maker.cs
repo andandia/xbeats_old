@@ -34,49 +34,43 @@ public class Note_maker : MonoBehaviour
 
 	void Note_make ()
 	{
-		if (Dc.Is_create_note_search())
+		if (Dc.Is_create_note_search(1))
 		{
-			if (Dc.Is_create_note())
+			if (Dc.Is_create_note_line1())
 			{
-				Dc.Mark_Made_note();
-				Ops.Make_note();
-				//int syncTimes = Dc.Note_data_list[Dc.Get_Create_note_data_index()].syncTimes;
-				//if (syncTimes > 0)
-				//{
-				//	for (int i = 0; i < syncTimes; i++)
-				//	{
-				//		Dc.Mark_Made_note();
-				//		Ops.Make_note();
-				//	}
-				//}
-
-				//Debug_Note_info();//todo 後で消す
-				Dc.Inc_Create_note_data_index();
-
-
-				
+				Dc.Mark_Made_note(1);
+				Ops.Make_note(1);
+				//Debug_Note_info(1);
+				Dc.Inc_Create_note_data_index(1);
 			}
 		}
-
-
-
-
-
+		if (Dc.Is_create_note_search(2))
+		{
+			if (Dc.Is_create_note_line2())
+			{
+				Dc.Mark_Made_note(2);
+				Ops.Make_note(2);
+				Dc.Inc_Create_note_data_index(2);
+			}
+		}
 	}
 
+
+	
 	/// <summary>
 	/// デバッグ用ノート情報表示
 	/// </summary>
-	void Debug_Note_info ()
+	void Debug_Note_info (int line)
 	{
-		Note_data note_data = Dc.Get_Create_note_data();
-		Debug.Log("/*-------------------*/");
+		Note_data note_data = Dc.Get_Create_note_data(line);//デバッグする時なおして
+		//Debug.Log("/*-------------------*/");
+		Debug.Log("line " + line);
 		Debug.Log("startTime " + note_data.startTime);
 		Debug.Log("steamTime " + note_data.steamTime);
 		Debug.Log("parfectTime " + note_data.parfectTime);
 		Debug.Log("time " + Time.Get_time());
 		Debug.Log("生成 ");
-		//Debug.Log("/*-------------------*/");
+		Debug.Log("/*-------------------*/");
 	}
 
 }

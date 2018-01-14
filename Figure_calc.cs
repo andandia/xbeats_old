@@ -391,7 +391,7 @@ public class Figure_calc : MonoBehaviour
 	/*------------------直角時-----------------------*/
 
 
-	public double[] Note_pos_result()
+	public double[] Get_Note_pos_result()
 	{
 		double[] note_pos = new double[10];
 		note_pos[0] = note_line.touch_point_x;

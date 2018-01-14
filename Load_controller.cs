@@ -38,7 +38,7 @@ public class Load_controller : MonoBehaviour
 		Json_load.Insert_Header();
 		Json_load.Insert_BPM_List();
 		Json_load.Insert_notes_List();
-		Score_load.Load_score();
+		Score_load.Main_Load_score();
 		Play_controller.Starter();//最終的には要らない
 	}
 
