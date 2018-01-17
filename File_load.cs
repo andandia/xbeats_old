@@ -26,9 +26,9 @@ public class File_load : MonoBehaviour
 		{
 			filepath = basic_path + "/Songs/" + folder_name + "/" + file_name;
 		}
-		else if (filetype == 2)//設定ファイル用
+		else if (filetype == 2)//設定ファイル,曲リストjson用
 		{
-
+			filepath = basic_path + file_name;
 		}
 
 		//Debug.Log(filepath);

@@ -18,7 +18,7 @@ public class Load_controller : MonoBehaviour
 
 	[SerializeField]
 	File_load File_load;
-	[SerializeField] Json_load Json_load;
+	[SerializeField] pxbp_load pxbp_Load;
 	[SerializeField] Score_load Score_load;
 
 	[SerializeField] string song_dir;
@@ -34,10 +34,10 @@ public class Load_controller : MonoBehaviour
 	void Start()
 	{
 		To_be_load();
-		Json_load.Load_json(pxbp[0]);
-		Json_load.Insert_Header();
-		Json_load.Insert_BPM_List();
-		Json_load.Insert_notes_List();
+		pxbp_Load.Load_json(pxbp[0]);
+		pxbp_Load.Insert_Header();
+		pxbp_Load.Insert_BPM_List();
+		pxbp_Load.Insert_notes_List();
 		Score_load.Main_Load_score();
 		Play_controller.Starter();//最終的には要らない
 	}

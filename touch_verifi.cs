@@ -22,6 +22,7 @@ public class touch_verifi : MonoBehaviour {
 			for (int i = 0; i < Input.touchCount; i++)
 			{
 				touch = Input.GetTouch(i);
+				Debug.Log("touch.phase " + touch.phase + " " + touch.fingerId);
 				switch (touch.phase)
 				{
 					case TouchPhase.Began:
@@ -48,7 +49,7 @@ public class touch_verifi : MonoBehaviour {
 	void OneFinger ()
 	{
 		targetText.text = "one " + Input.touches[0].phase;
-		Debug.Log("one " + Input.touches[0].phase);
+		//Debug.Log("one " + Input.touches[0].phase);
 	}
 
 
@@ -56,6 +57,6 @@ public class touch_verifi : MonoBehaviour {
 	void TwoFInger ()
 	{
 		targetText.text = "two " + Input.touches[0].phase + " " + Input.touches[1].phase;
-		Debug.Log("two "  + Input.touches[0].phase + " " + Input.touches[1].phase);
+		//Debug.Log("two "  + Input.touches[0].phase + " " + Input.touches[1].phase);
 	}
 }

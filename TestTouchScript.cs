@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using TouchScript.Gestures;
+//using TouchScript.Gestures;
 using UnityEngine;
 
 public class TestTouchScript : MonoBehaviour {
 
+	/*
 	[SerializeField] TapGesture tapGesture;
 	Gesture.GestureEvent OnTap;
 
@@ -45,25 +46,25 @@ public class TestTouchScript : MonoBehaviour {
 			Debug.Log("touch");
 		}
 		*/
+	/*
+}
 
-	}
+private void a ( object sender , GestureStateChangeEventArgs gesture )
+{
 
-	private void a ( object sender , GestureStateChangeEventArgs gesture )
+	//var gesture = sender as TapGesture;
+	//Debug.Log("1state " + gesture.State);
+
+	if (gesture.State == Gesture.GestureState.Possible)
 	{
-
-		//var gesture = sender as TapGesture;
-		//Debug.Log("1state " + gesture.State);
-	
-		if (gesture.State == Gesture.GestureState.Possible)
-		{
-			Debug.Log("touch");
-		}
-
-
+		Debug.Log("touch");
 	}
 
 
-	
+}
+
+*/
+
 
 
 }
