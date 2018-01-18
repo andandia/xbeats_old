@@ -12,12 +12,72 @@ public class ButtonController : BaseButtonController
 		if ("Button".Equals(objectName))
 		{
 			// Button1がクリックされたとき
-			ButtonClick();
+			Button_0_Click();
 		}
 		else if ("Button (1)".Equals(objectName))
 		{
 			// Button2がクリックされたとき
-			Button_1Click();
+			Button_1_Click();
+		}
+		else if ("Button (2)".Equals(objectName))
+		{
+			// Button2がクリックされたとき
+			Button_2_Click();
+		}
+		else if ("Button (3)".Equals(objectName))
+		{
+			// Button2がクリックされたとき
+			Button_3_Click();
+		}
+		else if ("Button (4)".Equals(objectName))
+		{
+			// Button2がクリックされたとき
+			Button_4_Click();
+		}
+		else if ("Button (5)".Equals(objectName))
+		{
+			// Button2がクリックされたとき
+			Button_5_Click();
+		}
+		else if ("Button (6)".Equals(objectName))
+		{
+			// Button2がクリックされたとき
+			Button_6_Click();
+		}
+		else if ("Button (7)".Equals(objectName))
+		{
+			// Button2がクリックされたとき
+			Button_7_Click();
+		}
+		else if ("Button (8)".Equals(objectName))
+		{
+			// Button2がクリックされたとき
+			Button_8_Click();
+		}
+		else if ("Button (9)".Equals(objectName))
+		{
+			// Button2がクリックされたとき
+			Button_9_Click();
+		}
+		else if ("page_plus_button".Equals(objectName))//ページ
+		{
+			// Button2がクリックされたとき
+			page_plus_button_Click();
+		}
+		else if ("page_minus_button".Equals(objectName))//ページ
+		{
+			// Button2がクリックされたとき
+			page_minus_button_Click();
+		}
+		else if ("HS_plus_button".Equals(objectName))//ページ
+		{
+			// Button2がクリックされたとき
+			HS_plus_button_Click();
+		}
+		else if ("HS_minus_button".Equals(objectName))//ページ
+		{
+			// Button2がクリックされたとき
+			HS_minus_button_Click();
 		}
 		else
 		{
@@ -25,13 +85,85 @@ public class ButtonController : BaseButtonController
 		}
 	}
 
-	private void ButtonClick ()
+	private void Button_0_Click ()
 	{
 		Debug.Log("Button1 Click");
 	}
 
-	private void Button_1Click ()
+	private void Button_1_Click ()
 	{
 		Debug.Log("Button2 Click");
 	}
+
+	private void Button_2_Click ()
+	{
+		Debug.Log("Button1 Click");
+	}
+
+	private void Button_3_Click ()
+	{
+		Debug.Log("Button2 Click");
+	}
+
+	private void Button_4_Click ()
+	{
+		Debug.Log("Button1 Click");
+	}
+
+	private void Button_5_Click ()
+	{
+		Debug.Log("Button2 Click");
+	}
+
+	private void Button_6_Click ()
+	{
+		Debug.Log("Button1 Click");
+	}
+
+	private void Button_7_Click ()
+	{
+		Debug.Log("Button2 Click");
+	}
+
+	private void Button_8_Click ()
+	{
+		Debug.Log("Button1 Click");
+	}
+
+	private void Button_9_Click ()
+	{
+		Debug.Log("Button2 Click");
+	}
+
+
+	/*---------------------*/
+
+	private void page_plus_button_Click ()
+	{
+		Debug.Log("Button2 Click");
+	}
+
+	private void page_minus_button_Click ()
+	{
+		Debug.Log("Button2 Click");
+	}
+
+	/*---------------------*/
+
+	private void HS_plus_button_Click ()
+	{
+		Debug.Log("Button2 Click");
+	}
+
+	private void HS_minus_button_Click ()
+	{
+		Debug.Log("Button2 Click");
+	}
+
+
+
+
+
+
+
 }
