@@ -50,8 +50,11 @@ public class Score_load : MonoBehaviour
 	private double note_steam_time = 0;
 
 
-	[SerializeField] double HiSpeed = 2.0;//Todo 選曲画面から投げられるようにすべき
+	double HiSpeed = 0;
 
+	float startOffset;
+	float perfectOffset;
+	string MusicfilesName;
 
 	//以下はノート構造体格納用の一次保管変数
 	private double temp_note_time;
@@ -75,11 +78,14 @@ public class Score_load : MonoBehaviour
 	/// <summary>
 	/// ロード時に最初に呼ばれる窓口になるメソッド。
 	/// </summary>
-	public void Main_Load_score()
+	public void Main_Load_score(float HS , float startOffset ,float perfectOffset,string MusicfilesName )
 	{
+		HiSpeed = HS;
+		this.startOffset = startOffset;
+		this.perfectOffset = perfectOffset;
+		this.MusicfilesName = MusicfilesName;
 		temp_note_pos = new double[10];
 		long_list = new Long_struct[3];//本来はレーンの数にするべき
-	
 		Area_pointer();//ここを呼ぶと計算が行われ、temp_note_data_list群に全て結果が入る。
 		Transfer_temp_note_data_list();
 	}
@@ -560,9 +566,9 @@ public class Score_load : MonoBehaviour
 			noteType = 2;//ホールド
 		}
 		note_Data.noteType       = noteType;
-		note_Data.startTime      = temp_start_time + Sd.offset;   //temp_start_time + Sd.offset
+		note_Data.startTime      = temp_start_time + Sd.offset + startOffset;   //temp_start_time + Sd.offset
 		note_Data.steamTime      = (float)note_steam_time;
-		note_Data.parfectTime    = (float)( temp_note_time + Sd.offset );
+		note_Data.parfectTime    = (float)( temp_note_time + Sd.offset + perfectOffset );
 		note_Data.note_end_pos.x = (float)temp_note_pos[0];
 		note_Data.note_end_pos.y = (float)temp_note_pos[1];
 		note_Data.note_pos1.x    = (float)temp_note_pos[2];
@@ -626,7 +632,7 @@ public class Score_load : MonoBehaviour
 			//Debug.Log(i);
 			//Debug_note_data_show(2 , temp_note_data_list_line2[i]);
 		}
-
+		Dc.Set_MusicfileName(MusicfilesName);
 	}
 
 

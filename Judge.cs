@@ -4,30 +4,44 @@ using UnityEngine;
 
 public class Judge : MonoBehaviour {
 
-	[SerializeField] Data_cabinet Dc;
+	GameObject Dc_OBJ;
+	Data_cabinet Dc;
 	[SerializeField] ObjectPoolSuper ops;
 	[SerializeField] Time_manager time;
 	[SerializeField] SE_player SE_Player;
+	[SerializeField] Effect_Manager effect_Manager;
 	Note_data note_Data_line1;
 	Note_data note_Data_line2;
 
-	[SerializeField] float perfectTime;
-	[SerializeField] float greatTime;
-	[SerializeField] float goodTime;
-	[SerializeField] float poorTime;
+	[SerializeField] float perfectTime;//初期0.02
+	[SerializeField] float greatTime;//0.04
+	[SerializeField] float goodTime;//0.1
+	[SerializeField] float poorTime;//0.15
 
 	[SerializeField] debug_disp_info debug_Disp_Info;
+
+	
 
 
 	/// <summary>
 	/// タッチの範囲の許容量。(ワールド座標基準)
 	/// </summary>
-	[SerializeField] float touchwidth = 2;
+	[SerializeField] float touchwidth;
 
 	/// <summary>
 	/// タッチした指がどのlineのノートの範囲内にあるか。is_touch_within_rangeで判定。
 	/// </summary>
 	int within_range_line;
+
+	void Start ()
+	{
+		Dc_OBJ = GameObject.FindGameObjectWithTag("Dc");
+		Dc = Dc_OBJ.GetComponent<Data_cabinet>();
+		Dc.Set_Time_Script(time);
+		ops.Set_Dc_Script(Dc);
+		CriAtom.SetBusAnalyzer(false);
+	}
+
 
 	void LateUpdate ()
 	{
@@ -48,7 +62,6 @@ public class Judge : MonoBehaviour {
 		{
 			note_Data_line2 = Dc.Get_Judge_note_data(2);
 		}
-		//Dc.Inc_Judge_get_note_data_index();ここにあるのはおかしいはず
 
 		if (Is_touch_within_range(my_Touch.touchPos))
 		{
@@ -98,13 +111,19 @@ public class Judge : MonoBehaviour {
 	void Time_judge (int line, float touchtime)
 	{
 		float lag = 10;
+		float raw_lag = 1000;//絶対値ではないlag
+		Vector2 end_pos = new Vector3();
 		switch (line)
 		{
 			case 1:
 				lag = Mathf.Abs(note_Data_line1.parfectTime - touchtime);
+				raw_lag = note_Data_line1.parfectTime - touchtime;
+				end_pos = note_Data_line1.note_end_pos;
 				break;
 			case 2:
 				lag = Mathf.Abs(note_Data_line2.parfectTime - touchtime);
+				raw_lag = note_Data_line1.parfectTime - touchtime;
+				end_pos = note_Data_line1.note_end_pos;
 				break;
 			default:
 				break;
@@ -115,32 +134,36 @@ public class Judge : MonoBehaviour {
 		{
 			
 			Debug.Log("Time_Judge PERFECT!!! " + line);
-			//debug_Disp_Info.disp_judge(1);
+			//debug_Disp_Info.disp_judge(raw_lag);
 			SE_Player.Play_touch_sound(1);
+			effect_Manager.Play_Particle(1,end_pos);
 			ops.DestroyNote(line);
 		}
 		else if (lag <= greatTime)
 		{
 			
 			Debug.Log("Time_Judge GREAT!! " + line);
-			//debug_Disp_Info.disp_judge(2);
+			//debug_Disp_Info.disp_judge(raw_lag);
 			SE_Player.Play_touch_sound(2);
+			effect_Manager.Play_Particle(2 , end_pos);
 			ops.DestroyNote(line);
 		}
 		else if (lag <= goodTime)
 		{
 			
 			Debug.Log("Time_Judge GREAT!! " + line);
-			//debug_Disp_Info.disp_judge(3);
+			//debug_Disp_Info.disp_judge(raw_lag);
 			SE_Player.Play_touch_sound(3);
+			effect_Manager.Play_Particle(3 , end_pos);
 			ops.DestroyNote(line);
 		}
 		else if (lag <= poorTime)
 		{
 			
 			Debug.Log("Time_Judge BAD… " + line);
-			//debug_Disp_Info.disp_judge(4);
+			//debug_Disp_Info.disp_judge(raw_lag);
 			SE_Player.Play_touch_sound(4);
+			effect_Manager.Play_Particle(4 , end_pos);
 			ops.DestroyNote(line);
 
 		}
@@ -169,7 +192,7 @@ public class Judge : MonoBehaviour {
 			{
 				if (Dc.Get_judge_note_is_judged(1) == false)
 				{
-					Debug.Log("Through… " + 1);
+					//Debug.Log("Through… " + 1);
 					//debug_Disp_Info.disp_judge(5);
 					ops.DestroyNote(1);
 					
@@ -183,7 +206,7 @@ public class Judge : MonoBehaviour {
 			{
 				if (Dc.Get_judge_note_is_judged(2) == false)
 				{
-					Debug.Log("Through… " + 2);
+					//Debug.Log("Through… " + 2);
 					//debug_Disp_Info.disp_judge(5);
 					ops.DestroyNote(2);
 				}
@@ -191,4 +214,29 @@ public class Judge : MonoBehaviour {
 		}
 
 	}
+
+
+
+	//エディタ用デバッグメソッド
+#if UNITY_EDITOR || UNITY_STANDALONE
+
+
+
+
+	//キーボードで無理やり判定を通す
+	public void Main_judge (int line , float touchTime)
+	{
+		note_Data_line1 = Dc.Get_Judge_note_data(1);
+		if (Dc.Note_data_list_line2.Length != 0)
+		{
+			note_Data_line2 = Dc.Get_Judge_note_data(2);
+		}
+
+
+		Time_judge(line , touchTime);
+		
+	}
+
+#endif
+
 }

@@ -15,12 +15,15 @@ using UnityEngine;
 public class Note_maker : MonoBehaviour
 {
 	[SerializeField] Time_manager Time;
-	[SerializeField] Data_cabinet Dc;
 	[SerializeField] ObjectPoolSuper Ops;
+	GameObject Dc_OBJ;
+	Data_cabinet Dc;
+
 
 	void Start ()
 	{
-
+		Dc_OBJ = GameObject.FindGameObjectWithTag("Dc");
+		Dc = Dc_OBJ.GetComponent<Data_cabinet>();
 	}
 
 

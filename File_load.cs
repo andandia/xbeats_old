@@ -2,6 +2,7 @@
 using System.IO;//ファイルを読むのに必要
 using System.Text;//ファイルのエンコード指定に必要
 using UnityEngine;
+using UnityEngine.UI;
 
 public class File_load : MonoBehaviour
 {
@@ -10,11 +11,14 @@ public class File_load : MonoBehaviour
 	const String oggEx = ".ogg";
 	*/
 
+	[SerializeField] GameObject ErrorMessage;
+	[SerializeField] GameObject debug_text;
+
 	/// <summary>
 	/// フォルダパスを返す
 	/// </summary>
 	/// <param name="filetype">0,1が譜面、音源用、2が設定ファイル用</param>
-	/// <param name="folder_name"></param>
+	/// <param name="folder_name">曲ファイルを収納しているフォルダ。</param>
 	/// <param name="file_name">拡張子必須。</param>
 	/// <returns></returns>
 	public string Filepath_decide ( int filetype , string folder_name , string file_name )
@@ -28,7 +32,7 @@ public class File_load : MonoBehaviour
 		}
 		else if (filetype == 2)//設定ファイル,曲リストjson用
 		{
-			filepath = basic_path + file_name;
+			filepath = basic_path + "/Settings/" +  file_name;
 		}
 
 		//Debug.Log(filepath);
@@ -52,10 +56,14 @@ public class File_load : MonoBehaviour
 			case RuntimePlatform.OSXPlayer:
 				break;
 			case RuntimePlatform.WindowsPlayer:
+				filepath = Application.dataPath; //exe以下のhoge_Dataを返す
+				filepath += "/..";//1階層上がる
 				break;
 			case RuntimePlatform.IPhonePlayer:
+				break;
 			case RuntimePlatform.WindowsEditor:
 				filepath = Application.dataPath;
+				//debug_text.GetComponent<Text>().text = filepath;
 				break;
 			case RuntimePlatform.Android:
 				using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
@@ -66,7 +74,7 @@ public class File_load : MonoBehaviour
 						{
 							filepath = externalFilesDir.Call<string>("getCanonicalPath");
 							//Debug.Log("filepath " + filepath);
-							//基本的に内部SD/Android/data/com.xbeats/が返ってくる
+							//基本的に内部SD/Android/data/com.xbeats(指定してるPackage Name)/が返ってくる
 						}
 					}
 				}
@@ -105,10 +113,9 @@ public class File_load : MonoBehaviour
 		}
 		catch (Exception)
 		{
-			// 改行コード
-			file_content += "エラー：ファイルが読めませんでした。";
-			//エラーは将来的にポップアップとか出したい
-			Debug.Log("エラー ");
+			ErrorMessage.GetComponent<Text>().text = "ファイルが読み込めませんでした。Music.Jsonの確認または\n" +
+				"フォルダ名、pxbp及びmp3ファイル名は全てMusic.Jsonで指定した「ファイル名」で統一して下さい。 \n"
+				+ filepath;
 		}
 
 		//↓デバック用。file_separatedの中身を見る

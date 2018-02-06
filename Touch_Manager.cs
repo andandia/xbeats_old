@@ -43,13 +43,32 @@ public class Touch_Manager : MonoBehaviour {
 		my_Touch.fingerID = finger.Index;
 		my_Touch.touchTime = touchTime;
 		my_Touch.touchPos = finger.GetStartWorldPosition(0);
-		Debug.Log("Set_My_touch " + my_Touch.touchPos);
+		//Debug.Log("Set_My_touch " + my_Touch.touchPos);
 	}
 
 
+#if UNITY_EDITOR || UNITY_STANDALONE
 
 
-	
+	void Update ()
+	{//ここにブレークポイントを張れる
+	 //if (Input.GetKeyDown(KeyCode.Space))
+	 //{
+	 //	Time.timeScale = 0f;
+	 //}
+	 //キーボードでも遊べるように
+		if (Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.J))
+		{
+			judge.Main_judge(1, time_Manager.Get_time());
+		}
+		if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.K))
+		{
+			judge.Main_judge(2 , time_Manager.Get_time());
+		}
+	}
+
+#endif
+
 
 
 	/// <summary>

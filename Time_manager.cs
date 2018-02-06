@@ -17,9 +17,10 @@ public class Time_manager : MonoBehaviour
 	public GameObject time_count_txt;//少数時間を表示する文字
 
 
+
 	public float Get_time ()
 	{
-		time_count_txt.GetComponent<UnityEngine.UI.Text>().text = audioSource.time.ToString();
+		//time_count_txt.GetComponent<UnityEngine.UI.Text>().text = audioSource.time.ToString();
 		if (audioSource.isPlaying == true)
 		{
 			return audioSource.time;

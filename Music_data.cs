@@ -6,13 +6,14 @@
 /// </summary>
 public struct Music_struct
 {
-	public string MusicName, artistName;
+	public string MusicName, artistName,filesName;
 
 
-	public Music_struct ( string MusicName , string artistName )
+	public Music_struct ( string MusicName , string artistName, string filesName )
 	{
 		this.MusicName = MusicName;
 		this.artistName = artistName;
+		this.filesName = filesName;
 	}
 }
 

@@ -3,12 +3,14 @@ using System.Collections;
 
 public class ButtonController : BaseButtonController
 {
+	[SerializeField] Music_data_load Music_data_load;
+
 
 	//やること:button分のメソッドを作る、メソッドからMusicdataloadに飛ばす
 	protected override void OnClick ( string objectName )
 	{
 		// 渡されたオブジェクト名で処理を分岐
-		//（オブジェクト名はどこかで一括管理した方がいいかも）
+		//buttonは曲名のやつ
 		if ("Button".Equals(objectName))
 		{
 			// Button1がクリックされたとき
@@ -59,6 +61,7 @@ public class ButtonController : BaseButtonController
 			// Button2がクリックされたとき
 			Button_9_Click();
 		}
+		/*--------------------------------------------------------------------------------------------*/
 		else if ("page_plus_button".Equals(objectName))//ページ
 		{
 			// Button2がクリックされたとき
@@ -69,6 +72,7 @@ public class ButtonController : BaseButtonController
 			// Button2がクリックされたとき
 			page_minus_button_Click();
 		}
+		/*--------------------------------------------------------------------------------------------*/
 		else if ("HS_plus_button".Equals(objectName))//ページ
 		{
 			// Button2がクリックされたとき
@@ -79,91 +83,105 @@ public class ButtonController : BaseButtonController
 			// Button2がクリックされたとき
 			HS_minus_button_Click();
 		}
+		else if ("debug_button".Equals(objectName))//タッチ検証シーンへ
+		{
+			// Button2がクリックされたとき
+			debug_button_Click();
+		}
 		else
 		{
-			throw new System.Exception("Not implemented!!");
+			throw new System.Exception("Not implemented!!"); 
 		}
 	}
 
 	private void Button_0_Click ()
 	{
-		Debug.Log("Button1 Click");
+		Music_data_load.LoadDTO_insert(0);
 	}
 
 	private void Button_1_Click ()
 	{
-		Debug.Log("Button2 Click");
+		Music_data_load.LoadDTO_insert(1);
 	}
 
 	private void Button_2_Click ()
 	{
-		Debug.Log("Button1 Click");
+		Music_data_load.LoadDTO_insert(2);
 	}
 
 	private void Button_3_Click ()
 	{
-		Debug.Log("Button2 Click");
+		Music_data_load.LoadDTO_insert(3);
 	}
 
 	private void Button_4_Click ()
 	{
-		Debug.Log("Button1 Click");
+		Music_data_load.LoadDTO_insert(4);
 	}
 
 	private void Button_5_Click ()
 	{
-		Debug.Log("Button2 Click");
+		Music_data_load.LoadDTO_insert(5);
 	}
 
 	private void Button_6_Click ()
 	{
-		Debug.Log("Button1 Click");
+		Music_data_load.LoadDTO_insert(6);
 	}
 
 	private void Button_7_Click ()
 	{
-		Debug.Log("Button2 Click");
+		Music_data_load.LoadDTO_insert(7);
 	}
 
 	private void Button_8_Click ()
 	{
-		Debug.Log("Button1 Click");
+		Music_data_load.LoadDTO_insert(8);
 	}
 
 	private void Button_9_Click ()
 	{
-		Debug.Log("Button2 Click");
+		Music_data_load.LoadDTO_insert(9);
 	}
 
 
-	/*---------------------*/
+	/*--------------------------------------------------------------------------------------------*/
 
 	private void page_plus_button_Click ()
 	{
-		Debug.Log("Button2 Click");
+		Debug.Log("page_plus_button_Click");
+		Music_data_load.Insert_Music_data_per_page(1);
+		Music_data_load.Insert_UI_text();
 	}
 
 	private void page_minus_button_Click ()
 	{
-		Debug.Log("Button2 Click");
+		Debug.Log("page_minus_button_Click Click");
+		Music_data_load.Insert_Music_data_per_page(-1);
+		Music_data_load.Insert_UI_text();
 	}
 
-	/*---------------------*/
+	/*--------------------------------------------------------------------------------------------*/
 
 	private void HS_plus_button_Click ()
 	{
 		Debug.Log("Button2 Click");
+		Music_data_load.SetHS(0.5f);
 	}
 
 	private void HS_minus_button_Click ()
 	{
 		Debug.Log("Button2 Click");
+		Music_data_load.SetHS(-0.5f);
+	}
+
+	private void debug_button_Click ()
+	{
+		UnityEngine.SceneManagement.SceneManager.LoadScene("touch検証");
 	}
 
 
-
-
-
+	
 
 
 }

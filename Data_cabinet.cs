@@ -10,8 +10,8 @@ public class Data_cabinet : MonoBehaviour
 	 index系命名規則目的(～する)_動作(Get、Add)_配列名_index
 	 * indexの取得、増加→Get_(対象)、Inc_(対象)
 	*/
-	[SerializeField] Time_manager Time;
-	[SerializeField] AudioSource audioSource;
+	Time_manager Time;
+	AudioSource BGM_Play;
 
 	public Note_data[] Note_data_list_line1;
 	public Note_data[] Note_data_list_line2;
@@ -22,8 +22,16 @@ public class Data_cabinet : MonoBehaviour
 	//[SerializeField] public GameObject[] cache_arrow_list = new GameObject[30];//todo 数は可変に
 	//[SerializeField] public Tween[] cache_tween_list = new Tween[30];//todo 数は可変に
 
+	private string MusicfileName;
 
-	
+
+	void Start ()
+	{
+		DontDestroyOnLoad(this);
+	}
+
+
+
 	/*--------------------------------------------------------------------------*/
 	//Create_add_note_made_indexはこの中でしか使ってないのでGetが要らない
 	//Judge_get_note_data_indexはこの中でしか使ってないのでGetが要らない
@@ -39,7 +47,6 @@ public class Data_cabinet : MonoBehaviour
 			default:
 				return -1;
 		}
-
 	}
 
 	/*--------------------------------------------------------------------------*/
@@ -129,7 +136,7 @@ public class Data_cabinet : MonoBehaviour
 	public bool Is_create_note_search (int line)
 	{
 		bool search = false;
-		if (audioSource.isPlaying == true)
+		if (BGM_Play.isPlaying == true)
 		{
 			switch (line)
 			{
@@ -161,7 +168,7 @@ public class Data_cabinet : MonoBehaviour
 	public bool Is_create_note_line1 ()
 	{
 		bool create = false;
-		if (audioSource.isPlaying == true)
+		if (BGM_Play.isPlaying == true)
 		{
 			if (Time.Get_time() >= Note_data_list_line1[create_Index.get_note_data_line1].startTime &&
 					Note_data_list_line1[create_Index.get_note_data_line1].made == false)
@@ -180,7 +187,7 @@ public class Data_cabinet : MonoBehaviour
 	public bool Is_create_note_line2 ()
 	{
 		bool create = false;
-		if (audioSource.isPlaying == true)
+		if (BGM_Play.isPlaying == true)
 		{ 
 			if (Time.Get_time() >= Note_data_list_line2[create_Index.get_note_data_line2].startTime &&
 								Note_data_list_line2[create_Index.get_note_data_line2].made == false)
@@ -191,9 +198,6 @@ public class Data_cabinet : MonoBehaviour
 		}
 		return create;
 	}
-
-
-
 
 
 
@@ -214,7 +218,6 @@ public class Data_cabinet : MonoBehaviour
 			default:
 				return;
 		}
-
 	}
 
 
@@ -346,7 +349,6 @@ public class Data_cabinet : MonoBehaviour
 		/// </summary>
 		public int get_note_data_line1;
 
-
 		/// <summary>
 		/// ノート作成時にNote_data_list_line2から値を取ってくるためのindex
 		/// </summary>
@@ -364,8 +366,6 @@ public class Data_cabinet : MonoBehaviour
 			this.get_note_data_line2 = get_note_data_line2;
 			this.add_note_made = add_note_made;
 		}
-
-
 	}
 
 
@@ -399,18 +399,30 @@ public class Data_cabinet : MonoBehaviour
 			this.get_note_data_line2 = get_note_data_line2;
 			this.get_note_made = get_note_made;
 		}
-
-
 	}
 
 
 
 
+	public void Set_BGM_Play (AudioSource BGM)
+	{
+		BGM_Play = BGM;
+	}
+
+	public void Set_Time_Script(Time_manager Time )
+	{
+		this.Time = Time;
+	}
+
+	public void Set_MusicfileName(string MusicfileName )
+	{
+		this.MusicfileName = MusicfileName;
+	}
 
 
-
-
-
-
+	public string Get_MusicfileName ()
+	{
+		return MusicfileName;
+	}
 
 }
