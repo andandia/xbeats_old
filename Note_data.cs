@@ -1,31 +1,31 @@
 ﻿using UnityEngine;
 
 
-public struct Note_data
+public class Note_data
 {
 	public double
-		noteType,
 		startTime,
-		endCnt;		
+		hold_end_time;
 
-	public float steamTime,rotation, parfectTime;
+	public float steamTime, rotation, parfectTime;
 
 	public Vector3
 		note_end_pos,
 		note_pos1,
 		note_pos2,
 		note_pos3,
-		note_pos4;
+		note_pos4,
+		flick_pos;
 
 	public int
-		flickAngle,
+		noteType,
 		syncTimes,
 		made_note_list_index;
 
 	public bool
 		judged,
 		made;
-	
+
 
 	/// <summary>
 	/// 
@@ -50,11 +50,12 @@ public struct Note_data
 	/// <param name="syncTimes"></param>
 	/// <param name="judged"></param>
 	/// <param name="made">ノートを作ったか。trueで作成済み</param>
+	/* クラスなら要らない(デフォルトコンストラクタがあるので)
 	public Note_data
 			( double noteType , double startTime , float steamTime , float parfectTime ,
 			float nepX , float nepY ,
 			float x1 , float y1 , float x2 , float y2 , float x3 , float y3 , float x4 , float y4 ,
-			double endCnt , float rotation , int flickAngle , int syncTimes ,
+			double hold_end_time , float rotation , int flickAngle , int syncTimes ,
 			bool judged , bool made
 			)
 	{
@@ -62,19 +63,20 @@ public struct Note_data
 		this.startTime = startTime;
 		this.steamTime = steamTime;
 		this.parfectTime = parfectTime;
-		note_end_pos = new Vector3(nepX, nepX);
-		note_pos1 = new Vector3(x1, y1);
-		note_pos2 = new Vector3(x2, y2);
-		note_pos3 = new Vector3(x3, y3);
-		note_pos4 = new Vector3(x4, y4);
-		this.endCnt = endCnt;
+		note_end_pos = new Vector3(nepX , nepX);
+		note_pos1 = new Vector3(x1 , y1);
+		note_pos2 = new Vector3(x2 , y2);
+		note_pos3 = new Vector3(x3 , y3);
+		note_pos4 = new Vector3(x4 , y4);
+		this.hold_end_time = hold_end_time;
 		this.rotation = rotation;
 		this.flickAngle = flickAngle;
 		this.syncTimes = syncTimes;
 		this.judged = judged;
 		this.made = made;
 		this.made_note_list_index = 0;
-}
+	}
+	*/
 }
 
 /*

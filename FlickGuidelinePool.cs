@@ -5,28 +5,27 @@ using System.Collections.Generic;
 /// <summary>
 /// ノートの矢印部分のオブジェクトプール
 /// </summary>
-public class GuidelinePool : ObjectPoolSuper
+public class FlickGuidelinePool : ObjectPoolSuper
 {
 	[SerializeField] ObjectPoolSuper ops;
 
 	//ObjectPoolのインスタンス
-	private static GuidelinePool _instance;
+	private static FlickGuidelinePool _instance;
 	// シングルトン
-	public static GuidelinePool instance
+	public static FlickGuidelinePool instance
 	{
 		get
 		{
 			// シーン上からオブジェクトプールを取得して返す
-			_instance = FindObjectOfType<GuidelinePool>();
+			_instance = FindObjectOfType<FlickGuidelinePool>();
 			return _instance;
 		}
 	}
 
 
+
 	[SerializeField] GameObject GuidelinePrefab;
-	[SerializeField] Sprite Guideline_Normal;
-	[SerializeField] Sprite Guideline_Hold;
-	SpriteRenderer Now_Sprite;
+	Transform flick_way;
 
 	Quaternion originalRotation;
 
@@ -37,13 +36,15 @@ public class GuidelinePool : ObjectPoolSuper
 		pooledGuideline = new List<GameObject>();
 	}
 	
-	public void Make_Guideline (int noteType)
+	public void Make_Guideline ()
 	{
 		foreach (GameObject obj in pooledGuideline)
 		{
 			if (obj.activeInHierarchy == false)
 			{
-				Set_Guideline_property(noteType,obj);
+				Set_Guideline_property(obj);
+				flick_way = obj.transform.Find("Flick_Way");
+				flick_way.rotation = LookAt(obj , ops.note_data.flick_pos);
 				obj.SetActive(true);
 				Set_made_note_Property(obj.GetInstanceID());
 				//Debug.Log("make GetInstanceID " + obj.GetInstanceID());
@@ -51,7 +52,9 @@ public class GuidelinePool : ObjectPoolSuper
 			}
 		}
 		GameObject newObj = Instantiate(GuidelinePrefab , ops.note_data.note_end_pos , originalRotation);
-		Set_Guideline_property(noteType,newObj);
+		Set_Guideline_property(newObj);
+		flick_way = newObj.transform.Find("Flick_Way");
+		flick_way.rotation = LookAt(newObj , ops.note_data.flick_pos);
 		pooledGuideline.Add(newObj);
 		Set_made_note_Property(newObj.GetInstanceID());
 	}
@@ -75,22 +78,27 @@ public class GuidelinePool : ObjectPoolSuper
 
 
 	//この中で位置やらをオブジェクトに与える
-	void Set_Guideline_property ( int noteType, GameObject obj )
+	void Set_Guideline_property ( GameObject obj )
 	{
-		Now_Sprite = obj.GetComponent<SpriteRenderer>();
-		float z_value = 2;//z軸座標
-		if (noteType == 0)//タッチ
-		{
-			Now_Sprite.sprite = Guideline_Normal;
-		}
-		else if (noteType == 2)//ホールド
-		{
-			Now_Sprite.sprite = Guideline_Hold;
-			z_value = 3;
-		}
+		
+		
 		//ノートより奥に配置するためにこの形式
-		obj.transform.position = new Vector3(ops.note_data.note_end_pos.x , ops.note_data.note_end_pos.y , z_value);
+		obj.transform.position = new Vector3(ops.note_data.note_end_pos.x , ops.note_data.note_end_pos.y , 2);
 		obj.transform.rotation = Quaternion.Euler(0 , 0 , ops.note_data.rotation);
+	}
+
+
+	Quaternion LookAt ( GameObject myself , Vector3 target )
+	{
+		Quaternion LookLoatation;
+		Vector3 diff = ( target - new Vector3(myself.transform.position.x , myself.transform.position.y , 0) ).normalized;
+		//Vector3 orientation;
+		//if	(direction == 1) { orientation = Vector3.up; }
+		//else if (direction == 2) { orientation = Vector3.right; }
+		//else if (direction == 3) { orientation = Vector3.down; }
+		//else if (direction == 4) { orientation = Vector3.left; }
+		LookLoatation = Quaternion.FromToRotation(Vector3.right , diff);
+		return LookLoatation;
 	}
 
 

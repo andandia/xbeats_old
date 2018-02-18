@@ -33,20 +33,7 @@ public class ArrowPool : ObjectPoolSuper
 	{
 		pooledArrow = new List<GameObject>();
 	}
-	/*
-	ノート生成流れ
-	ここに処理が来る
-プールの中から使えるものが無いか探す
-無かったら新規生成
-そのどちらかのオブジェクトを
-メソッドに投げて
-位置や角度の設定を行う
-tweenの設定をする
-作成したオブジェクトのIDを取得し、
-Made_noteに格納
-*/
-
-
+	
 
 
 
@@ -65,11 +52,11 @@ Made_noteに格納
 				//オブジェクトを投げる
 				Set_note_property(obj , 1);
 				obj.transform.rotation = LookAt(1 , obj , ops.note_data.note_end_pos);
-				obj.SetActive(true);
 				tween = Set_tween(obj);
+				obj.SetActive(true);
+				//Debug.Log("obj.transform " + obj.transform.position);
 				Set_made_note_Property(obj.GetInstanceID() , tween);
-				//オブジェクトを返す
-				//return obj;
+				
 				return;
 			}
 		}
@@ -84,12 +71,8 @@ Made_noteに格納
 		tween = Set_tween(newObj);
 		//リストに追加
 		pooledArrow.Add(newObj);
+		//Debug.Log(newObj.GetInstanceID() +" " + ops.note_data.note_end_pos);
 		Set_made_note_Property(newObj.GetInstanceID() , tween);
-
-
-		//オブジェクトを返す
-		//オブジェクトを返す必要はないので返さないように
-		//return newObj;
 	}
 
 
@@ -102,9 +85,9 @@ Made_noteに格納
 	{
 		foreach (GameObject obj in pooledArrow)
 		{
-			//Debug.Log("des GetInstanceID " + obj.GetInstanceID());
 			if (obj.GetInstanceID() == ops.made_Note.arrow_id_1)
 			{
+			//Debug.Log("des GetInstanceID " + obj.GetInstanceID());
 				obj.SetActive(false);
 				break;
 			}
@@ -161,12 +144,12 @@ Made_noteに格納
 			default:
 				break;
 		}
+		//Debug.Log("obj.transform.position " + obj.transform.position);
 		obj.transform.rotation = LookAt(1 , obj , ops.note_data.note_end_pos);
 
 	}
 
 	//オブジェクトのidとtweenをセットして作ったノートとして詰める
-	//todo 実態に即した形にする
 	void Set_made_note_Property ( int arrowID1 , Tween tween )
 	{
 		ops.made_Note.arrow_id_1 = arrowID1;

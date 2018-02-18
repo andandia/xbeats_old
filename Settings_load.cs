@@ -43,8 +43,8 @@ public class Settings_load : MonoBehaviour
 		settings_Struct = new Settings_struct();
 		settings_Struct.startOffset = jsons["startOffset"].AsFloat;
 		settings_Struct.perfectOffset = jsons["perfectOffset"].AsFloat;
-		Debug.Log(settings_Struct.startOffset);
-		Debug.Log(settings_Struct.perfectOffset);
+		//Debug.Log(settings_Struct.startOffset);
+		//Debug.Log(settings_Struct.perfectOffset);
 	}
 	
 	public Settings_struct GetSettings ()

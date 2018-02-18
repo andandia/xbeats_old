@@ -21,29 +21,35 @@ public class Figure_calc : MonoBehaviour
 	is_inside_areaは改修必要なし。他は対応済み
 	*/
 	/*freeは0.02刻みで1まで
-0-6
-7-13
-14-20
-21-27
-28-34
-*/
+	0-6
+	7-13
+	14-20
+	21-27
+	28-34
+	*/
 
 	private Display_size display_size;
 	private Note_line note_line;
 
 	/// <summary>
+	/// フリックとみなす座標をnote_end_posからどれだけの距離に置くか
+	/// </summary>
+	double flick_distance = 2;
+
+
+	/// <summary>
 	/// メインメソッド。ここに投げると計算してくれる。
 	/// </summary>
-	/// <param name="notetype">1はタッチ、フリック、2はホールド</param>
+	/// <param name="notetype">0はタッチ、1はフリック、2はホールド</param>
 	/// <param name="rotation"></param>
 	/// <param name="positionIndex"></param>
 	/// <param name="freeX"></param>
 	/// <param name="freeY"></param>
-	public void Main_figure_calc(int notetype, double rotation, int positionIndex, double freeX, double freeY)
-	{//type=1：タッチノート 2:ホールドノート
-		Screen_width_setup();//todo デバッグ用にここに置いておく,本当はstartとかでやるべき(この処理は1度でいい)
+	public void Main_figure_calc(int notetype, double rotation, int positionIndex, double freeX, double freeY ,double flickAngle )
+	{
+		Screen_width_setup();
 		Convert_worldpos(positionIndex, freeX, freeY);
-		if (rotation % 90 == 0)
+		if (rotation % 90 == 0)//直角なら
 		{
 			Lpos_decide(notetype, rotation);
 		}
@@ -51,6 +57,12 @@ public class Figure_calc : MonoBehaviour
 		{
 			Angle_calc(rotation);
 			Pos_decide(notetype, rotation);
+			
+			
+		}
+		if (notetype == 1)
+		{
+			flick_pos_decide(flickAngle);
 		}
 		/*実際の流れ
 		Screen_width_setup();で画面サイズ類を定義
@@ -131,8 +143,8 @@ public class Figure_calc : MonoBehaviour
 			pos_y = (display_size.free_width_y / 2) - display_size.free_unit_y * (freeY / 0.02);
 		}
 
-		note_line.touch_point_x = pos_x;
-		note_line.touch_point_y = pos_y;
+		note_line.note_end_pos_x = pos_x;
+		note_line.note_end_pos_y = pos_y;
 	}
 
 	private void Angle_calc(double rotation)
@@ -156,8 +168,8 @@ public class Figure_calc : MonoBehaviour
 		 3.ホールド対応(4点のxyを出す)
 		 3.も対応済み
 		*/
-		double through_x = note_line.touch_point_x;
-		double through_y = note_line.touch_point_y;
+		double through_x = note_line.note_end_pos_x;
+		double through_y = note_line.note_end_pos_y;
 		double fixed_x = 0;//そのパターンでのxy最大/最小値
 		double fixed_y = 0;
 		int cross_pattern = 0;
@@ -252,14 +264,16 @@ public class Figure_calc : MonoBehaviour
 				note_line.note_pos_four_y = temp_pos_move;
 			}
 		}
-		/*関係ないメモ
-タッチに関して、最大タッチ数(=プログラム側で受け付けるタッチの数)は
-ゲーム側想定の最大タッチ数*2でなければならない
-理由は、ロングノートを最大3点タッチしつづけて、終点と同時に3点のタッチノートが来た場合、
-3点をホールドしたまま3点をタッチするという動作をすることが考えられるからである。(できるかはともかく)
-もし3点しかプログラム側で認識しなければタッチノートの方はまったく反応もしないことになってしまう。
-*/
 	}
+
+	void flick_pos_decide (double flickAngle )
+	{
+		double fix_Angle = 360 - flickAngle;//pxbpの角度からunityの角度へ
+		note_line.flick_pos_x = note_line.note_end_pos_x + flick_distance *  ( Mathf.Cos((float)fix_Angle * ( Mathf.PI / 180 )) );
+		note_line.flick_pos_y = note_line.note_end_pos_y + flick_distance * ( Mathf.Sin((float)fix_Angle * ( Mathf.PI / 180 )) );
+	}
+
+
 
 	//方程式の代入結果を返す
 	private double Equation_answer(string return_hope, double fixed_x, double fixed_y, double slope, double through_x, double through_y)
@@ -344,46 +358,46 @@ public class Figure_calc : MonoBehaviour
 		 * ・ホールドの場合
 		 * 上下左右全て
 		 */
-		if (notetype == 1)
+		if (notetype == 0 || notetype == 1)
 		{
 			if (rotation == 0)
 			{
 				note_line.note_pos_one_x = display_size.xMin;
-				note_line.note_pos_one_y = note_line.touch_point_y;
-				note_line.note_pos_two_x = note_line.touch_point_x;
+				note_line.note_pos_one_y = note_line.note_end_pos_y;
+				note_line.note_pos_two_x = note_line.note_end_pos_x;
 				note_line.note_pos_two_y = display_size.yMax;
 			}
 			else if (rotation == 90)
 			{
-				note_line.note_pos_one_x = note_line.touch_point_x;
+				note_line.note_pos_one_x = note_line.note_end_pos_x;
 				note_line.note_pos_one_y = display_size.yMax;
 				note_line.note_pos_two_x = display_size.xMax;
-				note_line.note_pos_two_y = note_line.touch_point_y;
+				note_line.note_pos_two_y = note_line.note_end_pos_y;
 			}
 			else if (rotation == 180)
 			{
 				note_line.note_pos_one_x = display_size.xMax;
-				note_line.note_pos_one_y = note_line.touch_point_y;
-				note_line.note_pos_two_x = note_line.touch_point_x;
+				note_line.note_pos_one_y = note_line.note_end_pos_y;
+				note_line.note_pos_two_x = note_line.note_end_pos_x;
 				note_line.note_pos_two_y = display_size.yMin;
 			}
 			else if (rotation == 270)
 			{
 				note_line.note_pos_one_x = display_size.xMin;
-				note_line.note_pos_one_y = note_line.touch_point_y;
-				note_line.note_pos_two_x = note_line.touch_point_x;
+				note_line.note_pos_one_y = note_line.note_end_pos_y;
+				note_line.note_pos_two_x = note_line.note_end_pos_x;
 				note_line.note_pos_two_y = display_size.yMin;
 			}
 		}
 		else
 		{
 			note_line.note_pos_one_x = display_size.xMin;
-			note_line.note_pos_one_y = note_line.touch_point_y;
-			note_line.note_pos_two_x = note_line.touch_point_x;
+			note_line.note_pos_one_y = note_line.note_end_pos_y;
+			note_line.note_pos_two_x = note_line.note_end_pos_x;
 			note_line.note_pos_two_y = display_size.yMax;
 			note_line.note_pos_three_x = display_size.xMax;
-			note_line.note_pos_three_y = note_line.touch_point_y;
-			note_line.note_pos_four_x = note_line.touch_point_x;
+			note_line.note_pos_three_y = note_line.note_end_pos_y;
+			note_line.note_pos_four_x = note_line.note_end_pos_x;
 			note_line.note_pos_four_y = display_size.yMin;
 		}
 
@@ -393,9 +407,9 @@ public class Figure_calc : MonoBehaviour
 
 	public double[] Get_Note_pos_result()
 	{
-		double[] note_pos = new double[10];
-		note_pos[0] = note_line.touch_point_x;
-		note_pos[1] = note_line.touch_point_y;
+		double[] note_pos = new double[12];
+		note_pos[0] = note_line.note_end_pos_x;
+		note_pos[1] = note_line.note_end_pos_y;
 		note_pos[2] = note_line.note_pos_one_x;
 		note_pos[3] = note_line.note_pos_one_y;
 		note_pos[4] = note_line.note_pos_two_x;
@@ -404,6 +418,8 @@ public class Figure_calc : MonoBehaviour
 		note_pos[7] = note_line.note_pos_three_y;
 		note_pos[8] = note_line.note_pos_four_x;
 		note_pos[9] = note_line.note_pos_four_y;
+		note_pos[10] = note_line.flick_pos_x;
+		note_pos[11] = note_line.flick_pos_y;
 		return note_pos;
 	}
 
@@ -412,27 +428,34 @@ public class Figure_calc : MonoBehaviour
 	public struct Note_line
 	{
 		public double angle_one, angle_two, slope_one, slope_two,
-				touch_point_x, touch_point_y,
+				note_end_pos_x, note_end_pos_y,
 				note_pos_one_x, note_pos_one_y, note_pos_two_x, note_pos_two_y,
-				note_pos_three_x, note_pos_three_y, note_pos_four_x, note_pos_four_y;
+				note_pos_three_x, note_pos_three_y, note_pos_four_x, note_pos_four_y,
+				flick_pos_x, flick_pos_y;
 
 		public Note_line
-				(double ao, double at, double so, double st, double tpx, double tpy, double nonex, double noney, double ntwox, double ntwoy, double nthreex, double nthreey, double nfourx, double nfoury)
+				(double angle_one , double angle_two , double slope_one , double slope_two ,
+				 double note_end_pos_x , double note_end_pos_y , 
+				 double note_pos_one_x , double note_pos_one_y , double note_pos_two_x , double note_pos_two_y , 
+				 double note_pos_three_x , double note_pos_three_y , double note_pos_four_x , double note_pos_four_y ,
+				 double flick_pos_x , double flick_pos_y)
 		{
-			angle_one = ao;
-			angle_two = at;
-			slope_one = so;
-			slope_two = st;
-			touch_point_x = tpx;
-			touch_point_y = tpy;
-			note_pos_one_x = nonex;
-			note_pos_one_y = noney;
-			note_pos_two_x = ntwox;
-			note_pos_two_y = ntwoy;
-			note_pos_three_x = nthreex;
-			note_pos_three_y = nthreey;
-			note_pos_four_x = nfourx;
-			note_pos_four_y = nfoury;
+			this.angle_one = angle_one;
+			this.angle_two = angle_two;
+			this.slope_one = slope_one;
+			this.slope_two = slope_two;
+			this.note_end_pos_x = note_end_pos_x;
+			this.note_end_pos_y = note_end_pos_y;
+			this.note_pos_one_x = note_pos_one_x;
+			this.note_pos_one_y = note_pos_one_y;
+			this.note_pos_two_x = note_pos_two_x;
+			this.note_pos_two_y = note_pos_two_y;
+			this.note_pos_three_x = note_pos_three_x;
+			this.note_pos_three_y = note_pos_three_y;
+			this.note_pos_four_x = note_pos_four_x;
+			this.note_pos_four_y = note_pos_four_y;
+			this.flick_pos_x = flick_pos_x;
+			this.flick_pos_y = flick_pos_y;
 		}
 	}
 

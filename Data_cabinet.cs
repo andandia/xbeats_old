@@ -81,7 +81,7 @@ public class Data_cabinet : MonoBehaviour
 				return;
 		}
 	}
-	
+
 	public void Inc_Judge_get_note_made_index () { judge_Index.get_note_made += Avoid_nullpo(20 , judge_Index.get_note_made); }
 
 	/// <summary>
@@ -92,7 +92,7 @@ public class Data_cabinet : MonoBehaviour
 	/// <returns></returns>
 	int Avoid_nullpo ( int list_type , int Inc_value )
 	{//Note_data_list_line1 =10 Note_data_list_line2 =11  Note_made_list = 20
-	 //2桁なのは増やしてもmade側を対応しなくてよくするため
+	 //2桁なのはlineを増やしてもmade側を対応しなくてよくするため
 		int return_value = 1;
 		switch (list_type)
 		{
@@ -128,12 +128,12 @@ public class Data_cabinet : MonoBehaviour
 
 
 
-/// <summary>
-/// 作るノートを探すか
-/// </summary>
-/// <param name="line">どのlineで探すかどうか返答するか</param>
-/// <returns></returns>
-	public bool Is_create_note_search (int line)
+	/// <summary>
+	/// 作るノートを探すか
+	/// </summary>
+	/// <param name="line">どのlineで探すかどうか返答するか</param>
+	/// <returns></returns>
+	public bool Is_create_note_search ( int line )
 	{
 		bool search = false;
 		if (BGM_Play.isPlaying == true)
@@ -188,7 +188,7 @@ public class Data_cabinet : MonoBehaviour
 	{
 		bool create = false;
 		if (BGM_Play.isPlaying == true)
-		{ 
+		{
 			if (Time.Get_time() >= Note_data_list_line2[create_Index.get_note_data_line2].startTime &&
 								Note_data_list_line2[create_Index.get_note_data_line2].made == false)
 			{
@@ -222,6 +222,13 @@ public class Data_cabinet : MonoBehaviour
 
 
 
+	public void Set_tweener_made_note (int made_note_index, Tweener tweener)
+	{
+		Note_made_list[made_note_index].tweener = tweener;
+	}
+
+
+
 	/// <summary>
 	/// ノート作成時にnote_dataを取得する
 	/// </summary>
@@ -236,8 +243,29 @@ public class Data_cabinet : MonoBehaviour
 				return Note_data_list_line2[create_Index.get_note_data_line2];
 			default:
 				return Note_data_list_line1[-1];//これが返ってる時はおかしい(nullが返せないのでこの形)
-		}		
+		}
 	}
+
+	/// <summary>
+	/// indexで指定した任意のNote_dataを返す
+	/// </summary>
+	/// <param name="line"></param>
+	/// <param name="index"></param>
+	/// <returns></returns>
+	public Note_data Get_any_note_data ( int line , int index )
+	{
+		switch (line)
+		{
+			case 1:
+				return Note_data_list_line1[index];
+			case 2:
+				return Note_data_list_line2[index];
+			default:
+				return Note_data_list_line1[-1];//これが返ってる時はおかしい(nullが返せないのでこの形)
+		}
+	}
+
+
 
 	/// <summary>
 	/// Note_made_listに追加する
@@ -263,7 +291,7 @@ public class Data_cabinet : MonoBehaviour
 	/// 判定時にnote_dataを取得する
 	/// </summary>
 	/// <returns></returns>
-	public Note_data Get_Judge_note_data (int line)
+	public Note_data Get_Judge_note_data ( int line )
 	{
 		switch (line)
 		{
@@ -276,7 +304,6 @@ public class Data_cabinet : MonoBehaviour
 		}
 	}
 
-
 	/// <summary>
 	/// 判定後にmade_noteを取得する
 	/// </summary>
@@ -285,11 +312,57 @@ public class Data_cabinet : MonoBehaviour
 	{
 		return Note_made_list[judge_Index.get_note_made];
 	}
+	
+
+
+	/// <summary>
+	/// indexで指定されたmade_noteを返す
+	/// </summary>
+	/// <returns></returns>
+	public Made_note Get_any_made_note (int index)
+	{
+		return Note_made_list[index];
+	}
+
+	
+
+	/// <summary>
+	/// note_data_indexを渡すとそのnote_dataに紐づくmade_noteを返す
+	/// </summary>
+	/// <param name="note_data_index"></param>
+	/// <returns></returns>
+	public Made_note Get_any_made_note_by_note_data (int line, int note_data_index )
+	{
+		switch (line)
+		{
+			case 1:
+				return Note_made_list[Note_data_list_line1[note_data_index].made_note_list_index];
+			case 2:
+				return Note_made_list[Note_data_list_line2[note_data_index].made_note_list_index];
+			default:
+				return Note_made_list[-1];//この値が返ることはない
+		}
+	}
+
+	public int Get_any_made_note_index_by_note_data ( int line , int note_data_index )
+	{
+		switch (line)
+		{
+			case 1:
+				return Note_data_list_line1[note_data_index].made_note_list_index;
+			case 2:
+				return Note_data_list_line2[note_data_index].made_note_list_index;
+			default:
+				return -1;//この値が返ることはない
+		}
+	}
+
+
 
 	/// <summary>
 	/// 判定後にnote_dataのjudgedをtrueにする
 	/// </summary>
-	public void Set_judge_note_data_judged (int line)
+	public void Set_judge_note_data_judged ( int line )
 	{
 		switch (line)
 		{
@@ -304,8 +377,12 @@ public class Data_cabinet : MonoBehaviour
 		}
 	}
 
-
-	public float Get_judge_note_parfectTime (int line)
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="line"></param>
+	/// <returns></returns>
+	public float Get_judge_note_parfectTime ( int line )
 	{
 		switch (line)
 		{
@@ -323,7 +400,7 @@ public class Data_cabinet : MonoBehaviour
 	/// 現在判定すべきノートが判定済みかを返す
 	/// </summary>
 	/// <returns></returns>
-	public bool Get_judge_note_is_judged (int line)
+	public bool Get_judge_note_is_judged ( int line )
 	{
 		switch (line)
 		{
@@ -336,11 +413,29 @@ public class Data_cabinet : MonoBehaviour
 		}
 	}
 
+	/// <summary>
+	/// 現在見逃し判定すべきノートのmade_note_list_indexを返す
+	/// </summary>
+	/// <returns></returns>
+	public int Get_judge_made_note_list_index ( int line )
+	{
+		switch (line)
+		{
+			case 1:
+				return Note_data_list_line1[judge_Index.get_note_data_line1].made_note_list_index;
+			case 2:
+				return Note_data_list_line2[judge_Index.get_note_data_line2].made_note_list_index;
+			default:
+				return -1;//これが返ることはない
+		}
+	}
+
+
 
 
 
 	/// <summary>
-	/// 作成時に使用するインデックスを管理するためのスクリプト
+	/// 作成時に使用するインデックスを管理するための構造体
 	/// </summary>
 	public struct Create_index
 	{
@@ -371,7 +466,7 @@ public class Data_cabinet : MonoBehaviour
 
 
 	/// <summary>
-	/// 判定時に使用するインデックスを管理するためのスクリプト
+	/// 判定時に使用するインデックスを管理するための構造体
 	/// </summary>
 	public struct Judge_index
 	{
@@ -404,17 +499,17 @@ public class Data_cabinet : MonoBehaviour
 
 
 
-	public void Set_BGM_Play (AudioSource BGM)
+	public void Set_BGM_Play ( AudioSource BGM )
 	{
 		BGM_Play = BGM;
 	}
 
-	public void Set_Time_Script(Time_manager Time )
+	public void Set_Time_Script ( Time_manager Time )
 	{
 		this.Time = Time;
 	}
 
-	public void Set_MusicfileName(string MusicfileName )
+	public void Set_MusicfileName ( string MusicfileName )
 	{
 		this.MusicfileName = MusicfileName;
 	}

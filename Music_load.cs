@@ -36,10 +36,13 @@ public class Music_load : MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		Dc_OBJ = GameObject.FindGameObjectWithTag("Dc");
-		Dc = Dc_OBJ.GetComponent<Data_cabinet>();
-		Dc.Set_BGM_Play(audioSource);
-		Load_music(Dc.Get_MusicfileName());
+		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Play")
+		{
+			Dc_OBJ = GameObject.FindGameObjectWithTag("Dc");
+			Dc = Dc_OBJ.GetComponent<Data_cabinet>();
+			Dc.Set_BGM_Play(audioSource);
+			Load_music(Dc.Get_MusicfileName());
+		}
 		
 	}
 
@@ -91,8 +94,10 @@ public class Music_load : MonoBehaviour
 		// 読み込んだAudioClicpを設定する
 		audioSource.clip = audioTrack;
 		Invoke("End_BGM",(audioSource.clip.length + wait_time + 2));
-
-		error.SetActive(false);
+		if (error != null)
+		{
+			error.SetActive(false);
+		}
 		yield return new WaitForSeconds(wait_time);  //n秒待つ
 
 		// 読み込んだファイルを再生する

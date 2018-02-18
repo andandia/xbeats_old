@@ -49,7 +49,12 @@ public class Score_load : MonoBehaviour
 
 	private double note_steam_time = 0;
 
+	/// <summary>
+	/// long_strict.temp_idとして使う値。重複したくないので-1スタートのカウンターの形を取る
+	/// </summary>
+	private int long_id_counter = -1;
 
+	/* 選曲画面から渡される値 */
 	double HiSpeed = 0;
 
 	float startOffset;
@@ -84,7 +89,7 @@ public class Score_load : MonoBehaviour
 		this.startOffset = startOffset;
 		this.perfectOffset = perfectOffset;
 		this.MusicfilesName = MusicfilesName;
-		temp_note_pos = new double[10];
+		temp_note_pos = new double[12];
 		long_list = new Long_struct[3];//本来はレーンの数にするべき
 		Area_pointer();//ここを呼ぶと計算が行われ、temp_note_data_list群に全て結果が入る。
 		Transfer_temp_note_data_list();
@@ -132,49 +137,6 @@ public class Score_load : MonoBehaviour
 			else//BPM変動がない
 			{
 				Area_pointer_common_calc(4, bar);//パターン4
-			}
-		}
-	}
-
-	/// <summary>
-	/// 区間のノートを全て走査する
-	/// </summary>
-	/// <param name="head_cnt"></param>
-	/// <param name="foot_cnt"></param>
-	/// <param name="area_one_cnt_time"></param>
-	private void Note_search(double head_cnt, double foot_cnt, double area_one_cnt_time)
-	{
-		//↓区間にノートが存在しているか
-		if (head_cnt <= Sd.note_List[note_list_index].count && Sd.note_List[note_list_index].count < foot_cnt)
-		{
-			for (; ; Add_note_list_index())
-			{
-				int type = 1;
-				if (Sd.note_List[note_list_index].endCnt != 0)//ホールド
-				{
-					type = 2;
-				}
-				temp_note_time = Timing_calc(head_cnt, foot_cnt, area_one_cnt_time);
-				Long_calc(1, head_cnt, foot_cnt, area_one_cnt_time);
-				Fc.Main_figure_calc(type, Sd.note_List[note_list_index].rotation,//位置角度計算の呼び出し
-														Sd.note_List[note_list_index].positionIndex,
-														Sd.note_List[note_list_index].freeX,
-														Sd.note_List[note_list_index].freeY
-														);
-				temp_note_pos = Fc.Get_Note_pos_result();//
-				Sync_note_search();
-				temp_start_time = Note_startTime_calc(Note_steamTime_calc());
-				Note_data_add();//全ての計算を終えて格納
-				if (note_list_index == (Sd.note_List.Length - 1))//今見ているノートが全体の最後
-				{
-					break;
-					//Debug.Log("ff");
-				}
-				else if (Sd.note_List[note_list_index + 1].count >= foot_cnt)//次のノートは次の区間になっている
-				{
-					Add_note_list_index();
-					break;
-				}
 			}
 		}
 	}
@@ -273,6 +235,56 @@ public class Score_load : MonoBehaviour
 
 
 	/// <summary>
+	/// 区間のノートを全て走査する
+	/// </summary>
+	/// <param name="head_cnt"></param>
+	/// <param name="foot_cnt"></param>
+	/// <param name="area_one_cnt_time"></param>
+	private void Note_search(double head_cnt, double foot_cnt, double area_one_cnt_time)
+	{
+		//↓区間にノートが存在しているか
+		if (head_cnt <= Sd.note_List[note_list_index].count && Sd.note_List[note_list_index].count < foot_cnt)
+		{
+			for (; ; Add_note_list_index())
+			{
+				int type = 0;
+				if (Sd.note_List[note_list_index].flickAngle != 0 )
+				{
+					type = 1;//フリック
+				}
+				if (Sd.note_List[note_list_index].endCnt != 0)
+				{
+					type = 2;//ホールド
+				}
+				temp_note_time = Timing_calc(head_cnt, foot_cnt, area_one_cnt_time);
+				Long_calc(1, head_cnt, foot_cnt, area_one_cnt_time);
+				Fc.Main_figure_calc(type , Sd.note_List[note_list_index].rotation ,//位置角度計算の呼び出し
+														Sd.note_List[note_list_index].positionIndex ,
+														Sd.note_List[note_list_index].freeX ,
+														Sd.note_List[note_list_index].freeY ,
+														Sd.note_List[note_list_index].flickAngle
+														);
+				temp_note_pos = Fc.Get_Note_pos_result();//figure_calcの計算結果を取得
+				Sync_note_search();
+				temp_start_time = Note_startTime_calc(Note_steamTime_calc());
+				Note_data_add();//全ての計算を終えて格納
+				if (note_list_index == (Sd.note_List.Length - 1))//今見ているノートが全体の最後
+				{
+					break;
+					//Debug.Log("ff");
+				}
+				else if (Sd.note_List[note_list_index + 1].count >= foot_cnt)//次のノートは次の区間になっている
+				{
+					Add_note_list_index();
+					break;
+				}
+			}
+		}
+	}
+
+
+
+	/// <summary>
 	/// ノートのタイミングを計算する
 	/// </summary>
 	/// <param name="head_cnt"></param>
@@ -297,58 +309,67 @@ public class Score_load : MonoBehaviour
 	/// <param name="head_cnt"></param>
 	/// <param name="foot_cnt">区間最後のcnt</param>
 	/// <param name="area_one_cnt_time">区間の1cntあたりの時間</param>
-	private void Long_calc(int mode, double head_cnt, double foot_cnt, double area_one_cnt_time)
-	{//todo このメソッドで用いてるup_to_timeは後に適切な名前に変える
-	 //todo ホールド時間の格納方法(ノートを見ている時点では時間は決まらない、LE開発のためにとりあえず放置
+	private void Long_calc ( int mode , double head_cnt , double foot_cnt , double area_one_cnt_time )
+	{
 		if (mode == 1)//ノーツ処理中に呼び出す
 		{
 			if (Sd.note_List[note_list_index].endCnt != 0)//ホールドである
 			{
-				double distance;
-				if (Sd.note_List[note_list_index].endCnt <= foot_cnt)//区間内
+				if (Sd.note_List[note_list_index].endCnt > head_cnt && Sd.note_List[note_list_index].endCnt <= foot_cnt)//区間内
 				{
-					distance = Sd.note_List[note_list_index].endCnt - Sd.note_List[note_list_index].count;
-					//double up_to_time = temp_note_time + (distance * area_one_cnt_time);
-					temp_holdend_time = temp_note_time + (distance * area_one_cnt_time);
-					//Debug.Log(temp_note_time + (distance * area_one_cnt_time));//ホールドが終了する時間が出る
-																																		 //Debug.Log(distance * area_one_cnt_time);//ホールドし続ける時間が出る
+					double distance = Sd.note_List[note_list_index].endCnt - head_cnt;//区間先頭からホールド終了までの距離
+					temp_holdend_time = up_to_time + ( distance * area_one_cnt_time );//区間先頭の時間＋ホールド終了の時間
+					Debug.Log(temp_holdend_time);
 				}
-				else//区間外
+				else
 				{
-					distance = foot_cnt - Sd.note_List[note_list_index].count;
-					double up_to_time = temp_note_time + (distance * area_one_cnt_time);
-					//Debug.Log("up_to_time " + up_to_time);//この区間内のホールド時間
-					long_list[Sd.note_List[note_list_index].part].end_cnt = Sd.note_List[note_list_index].endCnt;
-					long_list[Sd.note_List[note_list_index].part].up_to_time = up_to_time;
 					long_list[Sd.note_List[note_list_index].part].state = 1;
+					long_list[Sd.note_List[note_list_index].part].note_list_index = note_list_index;
+					long_list[Sd.note_List[note_list_index].part].end_cnt = Sd.note_List[note_list_index].endCnt;
+					long_list[Sd.note_List[note_list_index].part].temp_id = long_id_counter;
+					temp_holdend_time = long_id_counter;
+					long_id_counter--;
 				}
 			}
 		}
-		else if (mode == 2)//区間を抜けるときに呼び出す
+		else if (mode == 2)//こっちが呼ばれないっぽい
 		{
 			for (int i = 0; i < long_list.Length; i++)
 			{
-				if (long_list[i].state == 1)
+				if (long_list[i].state == 1)//ホールドがある区間で呼ばれた場合
 				{
 					long_list[i].state = 2;
 				}
 				else if (long_list[i].state == 2)
 				{
-					double distance;
-					if (long_list[i].end_cnt <= foot_cnt)//区間内
+					if (long_list[i].end_cnt > head_cnt && long_list[i].end_cnt <= foot_cnt)//この区間でホールド終了
 					{
-						//TODO 著しく間違ってる気がする。
-						//TODO ロングノーツ終了cnt - 区間の始まりcntから時間を出してそこにup_to_timeでは
-						distance = Sd.note_List[note_list_index].endCnt - Sd.note_List[note_list_index].count;
-						//double up_to_time = temp_note_time + (distance * area_one_cnt_time);
-						temp_holdend_time = temp_note_time + (distance * area_one_cnt_time);
-						long_list[i].state = 0;
-						//Debug.Log("");
+						double distance = long_list[i].end_cnt - head_cnt;//区間先頭からホールド終了までの距離
+						double temp_holdend_time = up_to_time + ( distance * area_one_cnt_time );//区間先頭の時間＋ホールド終了の時間
+						Debug.Log(temp_holdend_time);
+						//このtemp_holdend_timeをlong_list[i].temp_id とtemp_note_data_list_line1/2.hold_end_timeが一致するかで探して格納する
+						for (int j = 0; j < temp_note_data_list_line1.Count; j++)
+						{
+							if (long_list[i].temp_id == temp_note_data_list_line1[j].hold_end_time)
+							{
+								temp_note_data_list_line1[j].hold_end_time = temp_holdend_time + Sd.offset + startOffset;
+								Debug.Log("hold_end_time "  + temp_note_data_list_line1[j].hold_end_time);
+								Debug.Log("parfectTime " + temp_note_data_list_line1[j].parfectTime);
+							}
+						}
+
+
+
+
+
+
+
 					}
 				}
 			}
 		}
 	}
+
 
 
 	/// <summary>
@@ -576,6 +597,7 @@ public class Score_load : MonoBehaviour
 		note_Data.note_pos2.x    = (float)temp_note_pos[4];
 		note_Data.note_pos2.y    = (float)temp_note_pos[5];
 
+
 		if (noteType == 2)
 		{
 			note_Data.note_pos3.x  = (float)temp_note_pos[6];
@@ -583,9 +605,23 @@ public class Score_load : MonoBehaviour
 			note_Data.note_pos4.x  = (float)temp_note_pos[8];
 			note_Data.note_pos4.y  = (float)temp_note_pos[9];
 		}
-		note_Data.endCnt         = 0;//todo ホールド時間を入れる方法を考えたら修正
-		note_Data.rotation       = ( -1 ) * (float)Sd.note_List[note_list_index].rotation;//todo *-1で影響ないか
-		note_Data.flickAngle     = 0;//todo 角度を8方角にするメソッドを作る
+		if (noteType == 1)//フリック
+		{
+			note_Data.flick_pos.x = (float)temp_note_pos[10];
+			note_Data.flick_pos.y = (float)temp_note_pos[11];
+			//Debug.Log("note_list_index " + note_list_index);
+			//Debug.Log("flick_x " + note_Data.flick_pos.x);
+			//Debug.Log("flick_y " + note_Data.flick_pos.y);
+		}
+		if (temp_holdend_time < 0)//temp_idと揃えるためにマイナスの値が入っている場合
+		{
+			note_Data.hold_end_time = temp_holdend_time;
+		}
+		else
+		{
+			note_Data.hold_end_time = temp_holdend_time + Sd.offset + startOffset;
+		}
+		note_Data.rotation       = ( -1 ) * (float)Sd.note_List[note_list_index].rotation;
 		note_Data.syncTimes      = temp_sync_notes;
 		note_Data.judged         = false;
 		note_Data.made           = false;
@@ -641,16 +677,17 @@ public class Score_load : MonoBehaviour
 	/// </summary>
 	public struct Long_struct
 	{ //part(トラック)は配列のインデックスで判定する
-		public int state, note_list_index;
-		public double end_cnt, up_to_time;
+		public int state, note_list_index, temp_id;
+		public double end_cnt;
 
 		public Long_struct
-			(int index, int st, double endc, double uti)
+			(int note_list_index , int state ,int temp_id , double end_cnt )
 		{
-			note_list_index = index;
-			state = st;
-			end_cnt = endc;
-			up_to_time = uti;
+			this.note_list_index = note_list_index;
+			this.state = state;
+			this.end_cnt = end_cnt;
+			this.temp_id = temp_id;
+			//↑ロングの開始と終了が同区間でない場合終了秒にこのIDを突っ込み、後から挿入する際のキーとする
 		}
 	}
 

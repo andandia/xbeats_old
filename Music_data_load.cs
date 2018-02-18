@@ -69,9 +69,9 @@ public class Music_data_load : MonoBehaviour
 			music_Struct.MusicName = jsons["Music"][i]["曲名"].Value;//セル名を変えたらここも変える
 			music_Struct.artistName = jsons["Music"][i]["アーティスト"].Value;
 			music_Struct.filesName = jsons["Music"][i]["ファイル名"].Value;
-			Debug.Log(music_Struct.MusicName);
-			Debug.Log(music_Struct.artistName);
-			Debug.Log(music_Struct.filesName);
+			//Debug.Log(music_Struct.MusicName);
+			//Debug.Log(music_Struct.artistName);
+			//Debug.Log(music_Struct.filesName);
 			Music_list.Add(music_Struct);
 		}
 	}
