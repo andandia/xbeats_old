@@ -208,6 +208,7 @@ public class HoldArrowPool : ObjectPoolSuper
 	{
 		ops.made_Note.arrow_id_1 = arrowID1;
 		ops.made_Note.tween = tween;
+		Debug.Log("arrowID1 "  + arrowID1);
 	}
 
 

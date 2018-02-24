@@ -7,37 +7,50 @@ public class Touch_Manager : MonoBehaviour {
 
 	[SerializeField] Judge judge;
 	[SerializeField] Time_manager time_Manager;
+	GameObject Dc_OBJ;
+	Data_cabinet Dc;
 
 
 	My_touch[] my_Touch = new My_touch[3];
+	int my_touch_max_count = 3;
 
 
 	[SerializeField] debug_disp_info debug_Disp_Info;
 
 	void OnEnable ()
 	{
-		LeanTouch.OnFingerDown += TouchBegan;
+		LeanTouch.OnFingerDown += OnFingerDown;
 		LeanTouch.OnFingerSet += OnFingerSet;
 		LeanTouch.OnFingerUp += OnFingerUp;
+		Dc_OBJ = GameObject.FindGameObjectWithTag("Dc");
+		Dc = Dc_OBJ.GetComponent<Data_cabinet>();
+
 	}
 
 	void OnDisable ()
 	{
-		LeanTouch.OnFingerDown -= TouchBegan;
+		LeanTouch.OnFingerDown -= OnFingerDown;
 		LeanTouch.OnFingerSet -= OnFingerSet;
 		LeanTouch.OnFingerUp -= OnFingerUp;
 	}
 
+	/*----------------------------------------------------------------*/
+	/*----------------------------------------------------------------*/
 
-	void TouchBegan ( LeanFinger finger )
+	void OnFingerDown ( LeanFinger finger )
 	{
-		//Debug.Log("b " + LeanTouch.Fingers.Count);
-		//for (int i = 0; i < LeanTouch.Fingers.Count; i++)
-		//{
-		//	Set_My_touch(time_Manager.Get_time() , finger);
-		//}
-		Set_My_touch(1, time_Manager.Get_time() , finger);
-		judge.Main_judge(0, my_Touch[finger.Index]);
+		int mytouch_index = -1; //-1のままはおかしい
+		for (int i = 0; i < LeanTouch.Fingers.Count; i++)//同時押しでも指を見分けるため
+		{
+			if (finger.Index == LeanTouch.Fingers[i].Index)
+			{
+				mytouch_index = i;
+				break;
+			}
+		}
+
+		Set_My_touch(1, time_Manager.Get_time() , finger , mytouch_index);
+		judge.Main_judge(0, my_Touch[mytouch_index]);
 	}
 
 
@@ -50,22 +63,40 @@ public class Touch_Manager : MonoBehaviour {
 
 	void OnFingerUp ( LeanFinger finger )
 	{
-		if (my_Touch[finger.Index].isHolding == true)
+		int mytouch_index = -1; //-1のままはおかしい
+		for (int i = 0; i < LeanTouch.Fingers.Count; i++)//同時押しでも指を見分けるため
 		{
-			my_Touch[finger.Index].isHolding = false;
-			my_Touch[finger.Index].isTouching = false;
-			judge.Hold_judge(my_Touch[finger.Index] , time_Manager.Get_time());
+			if (finger.Index == LeanTouch.Fingers[i].Index)
+			{
+				mytouch_index = i;
+				break;
+			}
+		}
+		if (my_Touch[mytouch_index].isHolding == true)
+		{
+			my_Touch[mytouch_index].isHolding = false;
+			my_Touch[mytouch_index].isTouching = false;
+			judge.Hold_judge(my_Touch[mytouch_index] , time_Manager.Get_time());
 		}
 	}
 
 
 
 
-	public void Set_Hold ( int fingerIndex , int Hold_note_data_index , int Hold_note_line )
+	public void Set_Hold ( int fingerID , int Hold_note_data_index , int Hold_note_line )
 	{
-		my_Touch[fingerIndex].isHolding = true;//ホールド中にする
-		my_Touch[fingerIndex].Hold_note_data_index = Hold_note_data_index;//ホールドのnote_dataのindexを取得
-		my_Touch[fingerIndex].Hold_note_line = Hold_note_line;//ホールド中のnoteのlineを取得
+		int index = -1;
+		for (int i = 0; i < my_touch_max_count; i++)
+		{
+			if (my_Touch[i].fingerID == fingerID)
+			{
+				index = i;
+			}
+		}
+
+		my_Touch[index].isHolding = true;//ホールド中にする
+		my_Touch[index].Hold_note_data_index = Hold_note_data_index;//ホールドのnote_dataのindexを取得
+		my_Touch[index].Hold_note_line = Hold_note_line;//ホールド中のnoteのlineを取得
 		//Debug.Log(my_Touch[fingerIndex].isTouching);
 		//HoldState.GetComponent<Text>().text = "Set_Holdホールド";
 	}
@@ -78,10 +109,20 @@ public class Touch_Manager : MonoBehaviour {
 	/// </summary>
 	public void Check_Holding ( LeanFinger finger )
 	{
-		if (my_Touch[finger.Index].isHolding == true)//ホールド中なら
+		int mytouch_index = -1; //-1のままはおかしい
+		for (int i = 0; i < LeanTouch.Fingers.Count; i++)//同時押しでも指を見分けるため
+		{
+			if (finger.Index == LeanTouch.Fingers[i].Index)
+			{
+				mytouch_index = i;
+				break;
+			}
+		}
+
+		if (my_Touch[mytouch_index].isHolding == true)//ホールド中なら
 		{
 			//Debug.Log("a");
-			if (judge.Is_hold_within_range(finger.GetWorldPosition(0) ,my_Touch[finger.Index]) )//範囲内なら
+			if (judge.Is_hold_within_range(finger.GetWorldPosition(0) ,my_Touch[mytouch_index]) )//範囲内なら
 			{
 				//Debug.Log(finger.GetStartWorldPosition(0));
 				//Debug.Log("ホールド範囲");
@@ -91,21 +132,20 @@ public class Touch_Manager : MonoBehaviour {
 			else
 			{
 				//Debug.Log("ホールド範囲外");
-				my_Touch[finger.Index].isHolding = false;
-				judge.Hold_judge(my_Touch[finger.Index] , time_Manager.Get_time());
-				Debug.Log("ホールド範囲外");
+				my_Touch[mytouch_index].isHolding = false;
+				judge.Hold_judge(my_Touch[mytouch_index] , time_Manager.Get_time());
 			}
 		}
 	}
 	
 
-	void Set_My_touch (int touchPattern, float touchTime , LeanFinger finger )
+	void Set_My_touch (int touchPattern, float touchTime , LeanFinger finger , int mytouch_index )
 	{
-		int index = finger.Index;//0始まり
-		my_Touch[index].fingerID = finger.Index;
-		my_Touch[index].touchTime = touchTime;
-		my_Touch[index].touchPos = finger.GetStartWorldPosition(0);
-		my_Touch[index].isTouching = true;
+		my_Touch[mytouch_index].fingerID = finger.Index;
+		my_Touch[mytouch_index].touchTime = touchTime;
+		my_Touch[mytouch_index].touchPos = finger.GetStartWorldPosition(0);
+		my_Touch[mytouch_index].isTouching = true;
+		my_Touch[mytouch_index].mytouch_index = mytouch_index;
 		//Debug.Log("Set_My_touch " + my_Touch.touchPos);
 	}
 
@@ -113,6 +153,7 @@ public class Touch_Manager : MonoBehaviour {
 
 	public void Hold_complete (int hold_note_data_index , int line)
 	{
+	
 		for (int i = 0; i < my_Touch.Length; i++)
 		{
 			if (my_Touch[i].isHolding == true)
@@ -121,7 +162,9 @@ public class Touch_Manager : MonoBehaviour {
 				{
 					my_Touch[i].isHolding = false;
 					//my_Touch[i].isTouching = false;
-					judge.Hold_end(1 , my_Touch[i].Hold_note_line , my_Touch[i].Hold_note_data_index);
+					judge.Hold_end(1 , my_Touch[i].Hold_note_line ,
+						Dc.Get_any_made_note_index_by_note_data(my_Touch[i].Hold_note_line, my_Touch[i].Hold_note_data_index)
+						);
 				}
 			}
 		}
@@ -158,13 +201,14 @@ public class Touch_Manager : MonoBehaviour {
 	{
 		public int fingerID,
 							 Hold_note_data_index,
-							 Hold_note_line;
+							 Hold_note_line,
+							 mytouch_index;
 		public float touchTime;
 		public Vector2 touchPos;
 		public bool isTouching , isHolding;
 
 		public My_touch (int fingerID , float touchTime, Vector2 touchPos , bool isTouching, bool isHolding ,
-										 int Hold_note_data_index , int Hold_note_line )
+										 int Hold_note_data_index , int Hold_note_line ,int mytouch_index )
 		{
 			this.fingerID = fingerID;
 			this.touchTime = touchTime;
@@ -173,6 +217,7 @@ public class Touch_Manager : MonoBehaviour {
 			this.isHolding = isHolding;
 			this.Hold_note_data_index = Hold_note_data_index;
 			this.Hold_note_line = Hold_note_line;
+			this.mytouch_index = mytouch_index;
 		}
 
 

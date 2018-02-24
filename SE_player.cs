@@ -16,7 +16,7 @@ public class SE_player : MonoBehaviour {
 	/// <param name="judge">判定。PERFECT＝1</param>
 	public void Play_touch_sound (int judge)
 	{
-		Debug.Log("sound " + judge);
+		//Debug.Log("sound " + judge);
 
 		switch (judge)
 		{

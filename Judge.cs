@@ -73,7 +73,7 @@ public class Judge : MonoBehaviour
 			switch (within_range_line)
 			{
 				case 1:
-					hold_note_data_index = Dc.judge_Index.get_note_data_line1;
+					hold_note_data_index = Dc.judge_Index.get_note_data_line1;//note_data.made_note_indexでいいのでは
 					note_Data = note_Data_line1;
 					break;
 				case 2:
@@ -148,7 +148,7 @@ public class Judge : MonoBehaviour
 	/// <summary>
 	/// 時間の判定
 	/// </summary>
-	void Time_judge (Note_data note_Data ,  int line , int hold_note_data_index, float touchtime , int fingerindex )
+	void Time_judge (Note_data note_Data ,  int line , int hold_note_data_index, float touchtime , int fingerID )
 	{
 		float lag = Mathf.Abs(note_Data.parfectTime - touchtime);
 		//raw_lag = note_Data_line1.parfectTime - touchtime;
@@ -165,27 +165,27 @@ public class Judge : MonoBehaviour
 		//Debug.Log("note_Data.parfectTime " + note_Data.parfectTime + " touchtime " + touchtime);
 		if (lag <= perfectTime)
 		{
-			Debug.Log("Time_Judge PERFECT!!! " + line);
+			//Debug.Log("Time_Judge PERFECT!!! " + line);
 			//debug_Disp_Info.disp_judge(raw_lag);
-			After_judge(1 , line , fingerindex , hold_note_data_index , hold_time, note_Data);
+			After_judge(1 , line , fingerID , hold_note_data_index , hold_time, note_Data);
 
 		}
 		else if (lag <= greatTime)
 		{
-			Debug.Log("Time_Judge GREAT!! " + line);
+			//Debug.Log("Time_Judge GREAT!! " + line);
 			//debug_Disp_Info.disp_judge(raw_lag);
-			After_judge(2 , line , fingerindex , hold_note_data_index , hold_time , note_Data);
+			After_judge(2 , line , fingerID , hold_note_data_index , hold_time , note_Data);
 		}
 		else if (lag <= goodTime)
 		{
-			Debug.Log("Time_Judge GREAT!! " + line);
+			//Debug.Log("Time_Judge GREAT!! " + line);
 			//debug_Disp_Info.disp_judge(raw_lag);
-			After_judge(3 , line , fingerindex , hold_note_data_index , hold_time , note_Data);
+			After_judge(3 , line , fingerID , hold_note_data_index , hold_time , note_Data);
 		}
 		else if (lag <= poorTime)
 		{
-			Debug.Log("Time_Judge BAD… " + line);
-			After_judge(4 , line , fingerindex , hold_note_data_index , hold_time , note_Data);
+			//Debug.Log("Time_Judge BAD… " + line);
+			After_judge(4 , line , fingerID , hold_note_data_index , hold_time , note_Data);
 
 		}
 		else//判定時間外
@@ -200,13 +200,13 @@ public class Judge : MonoBehaviour
 	/// <summary>
 	/// 判定した後の共通処理
 	/// </summary>
-	void After_judge ( int judgetype ,  int line , int fingerindex , int hold_note_data_index ,float hold_time ,Note_data note_Data)
+	void After_judge ( int judgetype ,  int line , int fingerID , int hold_note_data_index ,float hold_time ,Note_data note_Data)
 	{
 		SE_Player.Play_touch_sound(judgetype);
 		effect_Manager.Play_Particle(judgetype , note_Data.note_end_pos);
 		if (note_Data.noteType == 2 && judgetype != 4)//ホールドかつpoorでないなら
 		{
-			touch_Manager.Set_Hold(fingerindex , hold_note_data_index , within_range_line);
+			touch_Manager.Set_Hold(fingerID , hold_note_data_index , within_range_line);
 			Hold_process(line , hold_note_data_index , hold_time);
 			ops.DestroyNote(line , note_Data.made_note_list_index , true, false);
 		}
@@ -225,25 +225,25 @@ public class Judge : MonoBehaviour
 		int judgetype = -1;
 		if (lag <= perfectTime)
 		{
-			Debug.Log("Hold_Judge PERFECT!!! ");
+			//Debug.Log("Hold_Judge PERFECT!!! ");
 			//debug_Disp_Info.disp_judge(raw_lag);
 			judgetype = 1;
 		}
 		else if (lag <= greatTime)
 		{
-			Debug.Log("Hold_Judge GREAT!! ");
+			//Debug.Log("Hold_Judge GREAT!! ");
 			//debug_Disp_Info.disp_judge(raw_lag);
 			judgetype = 2;
 		}
 		else if (lag <= goodTime)
 		{
-			Debug.Log("Hold_Judge GREAT!! ");
+			//Debug.Log("Hold_Judge GREAT!! ");
 			//debug_Disp_Info.disp_judge(raw_lag);
 			judgetype = 3;
 		}
 		else if (lag <= poorTime)
 		{
-			Debug.Log("Hold_Judge BAD… ");
+			//Debug.Log("Hold_Judge BAD… ");
 			judgetype = 4;
 		}
 		else
@@ -295,7 +295,7 @@ public class Judge : MonoBehaviour
 			{
 				if (Dc.Get_judge_note_is_judged(2) == false)
 				{
-					Debug.Log("Through… " + 2);
+					//Debug.Log("Through… " + 2);
 					//debug_Disp_Info.disp_judge(5);
 					ops.DestroyNote(2, Dc.Get_judge_made_note_list_index(2), false , false);
 				}
