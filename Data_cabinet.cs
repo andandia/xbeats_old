@@ -23,7 +23,7 @@ public class Data_cabinet : MonoBehaviour
 	//[SerializeField] public Tween[] cache_tween_list = new Tween[30];//todo 数は可変に
 
 	private string MusicfileName;
-
+	private float Swipe_distance;
 
 	void Start ()
 	{
@@ -509,15 +509,8 @@ public class Data_cabinet : MonoBehaviour
 		this.Time = Time;
 	}
 
-	public void Set_MusicfileName ( string MusicfileName )
-	{
-		this.MusicfileName = MusicfileName;
-	}
+	
 
-
-	public string Get_MusicfileName ()
-	{
-		return MusicfileName;
-	}
+	
 
 }

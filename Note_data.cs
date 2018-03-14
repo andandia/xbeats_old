@@ -19,12 +19,12 @@ public class Note_data
 
 	public int
 		noteType,
-		syncTimes,
 		made_note_list_index;
 
 	public bool
 		judged,
-		made;
+		made,
+		sync; //このノートを含んで他に同時押しがあるか(同時押し2つなら2つ両方trueになる)
 
 
 	/// <summary>

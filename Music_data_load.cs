@@ -31,22 +31,18 @@ public class Music_data_load : MonoBehaviour
 	string[] MusicDB = new string[0];
 	
 
-	void Start ()
-	{
-		To_be_load();
-
-	}
+	
 
 	/// <summary>
 	/// 初期設定
 	/// </summary>
-	void To_be_load ()
+	public void To_be_load ()
 	{
 		string filepath;
 		filepath = file_Load.Filepath_decide(2 , null , "Music.json");
 		MusicDB = file_Load.Load_file(filepath);
 		Load_Music_json(MusicDB[0]);
-		//Debug.Log(settings[0]);
+		//Debug.Log(MusicDB[0]);
 		Insert_Music_data();
 		Insert_Music_data_per_page(1);
 		Insert_UI_text();
@@ -58,6 +54,7 @@ public class Music_data_load : MonoBehaviour
 	public void Load_Music_json ( string json )
 	{
 		jsons = JSON.Parse(json);
+		//Debug.Log(jsons);
 	}
 
 
@@ -211,6 +208,7 @@ public class Music_data_load : MonoBehaviour
 			loadDTO.Set_perfectOffset(settings_Load.GetSettings().perfectOffset);
 			loadDTO.Set_startOffset(settings_Load.GetSettings().startOffset);
 			loadDTO.Set_HS(HS);
+			loadDTO.Set_Swipe_distance(settings_Load.GetSettings().Swipe_distance);
 			UnityEngine.SceneManagement.SceneManager.LoadScene("Load");
 		}
 	}

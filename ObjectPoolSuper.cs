@@ -76,7 +76,7 @@ public class ObjectPoolSuper : MonoBehaviour
 	public void DestroyNote ( int line , int made_note_index , bool isHolding , bool isHoldEnd )
 	{
 		if (isHolding == false)
-			//ホールド開始時じゃない(=タッチかフリック、もしくはホールド終了時ホールド開始時にここを呼ぶとノートが消えてしまう
+			//ホールド開始時じゃない(=タッチかフリック、もしくはホールド終了時。)ホールド開始時にここを呼ぶとノートが消えてしまう
 		{
 			made_Note = Dc.Get_any_made_note(made_note_index);
 			made_Note.tween.Kill();
@@ -86,7 +86,7 @@ public class ObjectPoolSuper : MonoBehaviour
 				guidelinePool.GuideDestoy();
 			}
 			else if (made_Note.noteType == 1)//フリック
-			{
+			{ 
 				flickguidelinePool.GuideDestoy();
 			}
 			if (made_Note.noteType == 0 || made_Note.noteType == 1)//タッチorフリック
@@ -98,9 +98,10 @@ public class ObjectPoolSuper : MonoBehaviour
 				HoldarrowPool.ArrowDestoy();
 			}
 		}
+		
 		if (isHoldEnd == false)//ホールド終了時じゃない
 		{
-			Dc.Set_judge_note_data_judged(line);
+			//Dc.Set_judge_note_data_judged(line);//todo 問題なければここから削除、移転先→Judge.After_judge及びThrough_chack
 			Dc.Inc_Judge_get_note_data_index(line);
 			Dc.Inc_Judge_get_note_made_index();
 		}

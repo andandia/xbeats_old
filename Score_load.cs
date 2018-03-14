@@ -16,7 +16,14 @@ public class Score_load : MonoBehaviour
 	/// <summary>
 	/// 許容する同時押しの数
 	/// </summary>
-	const int max_sync_notes = 3;
+	//const int max_sync_notes = 3;
+
+
+	/// <summary>
+	/// 判定上poorになる範囲。
+	/// </summary>
+	private float poorTime;
+
 
 	/// <summary>
 	/// 1拍のcnt。p×bの仕様に準拠すると48で変動なし
@@ -45,12 +52,13 @@ public class Score_load : MonoBehaviour
 
 	private double up_to_time = 0;
 
-	private int sync_notes_limiter = 0;
-
 	private double note_steam_time = 0;
 
 	/// <summary>
-	/// long_strict.temp_idとして使う値。重複したくないので-1スタートのカウンターの形を取る
+	/// long_strict.temp_idとして使う値。
+	/// この値はそのホールドのhold_end_timeと一時的に同じになり、後から本当のホールド時間を挿入するのに使う。
+	/// よって0以上の値を使うわけにはいかない(計算されたホールド時間かidとして一時的に入っている値なのか判断出来ない)ため、
+	/// -1スタート、減少するのカウンターの形を取る
 	/// </summary>
 	private int long_id_counter = -1;
 
@@ -60,6 +68,7 @@ public class Score_load : MonoBehaviour
 	float startOffset;
 	float perfectOffset;
 	string MusicfilesName;
+	float Swipe_distance;
 
 	//以下はノート構造体格納用の一次保管変数
 	private double temp_note_time;
@@ -69,8 +78,6 @@ public class Score_load : MonoBehaviour
 	private double temp_start_time;
 
 	private double temp_holdend_time;
-
-	private int temp_sync_notes;
 
 	public Long_struct[] long_list;
 
@@ -83,14 +90,16 @@ public class Score_load : MonoBehaviour
 	/// <summary>
 	/// ロード時に最初に呼ばれる窓口になるメソッド。
 	/// </summary>
-	public void Main_Load_score(float HS , float startOffset ,float perfectOffset,string MusicfilesName )
+	public void Main_Load_score ( float HS , float startOffset , float perfectOffset , string MusicfilesName , float Swipe_distance )
 	{
 		HiSpeed = HS;
 		this.startOffset = startOffset;
 		this.perfectOffset = perfectOffset;
 		this.MusicfilesName = MusicfilesName;
+		this.Swipe_distance = Swipe_distance;
+		poorTime = PlayerPrefs.GetFloat("poorTime");
 		temp_note_pos = new double[12];
-		long_list = new Long_struct[3];//本来はレーンの数にするべき
+		long_list = new Long_struct[3];
 		Area_pointer();//ここを呼ぶと計算が行われ、temp_note_data_list群に全て結果が入る。
 		Transfer_temp_note_data_list();
 	}
@@ -99,14 +108,14 @@ public class Score_load : MonoBehaviour
 	/// <summary>
 	/// 今見るべき範囲を確定し、Area_pointer_common_calcへ飛ばす
 	/// </summary>
-	private void Area_pointer()
+	private void Area_pointer ()
 	{
 		for (int bar = 1; Break_term(bar * note_resolution); bar++)//全ての小節を見る
 		{
 
 			if (Has_BPM_changed(bar))//小節にBPM変動がある
 			{
-				
+
 				for (; ; bpm_list_index++)
 				{
 					if (bpm_list_index == 0)//最初の小節のBPM変動の補正
@@ -116,14 +125,14 @@ public class Score_load : MonoBehaviour
 					}
 					if (Witch_near(Sd.BPM_List[bpm_list_index].count) == 0)//BPM変動開始から小節が近い																						 
 					{
-						Area_pointer_common_calc(1,bar);//パターン1
+						Area_pointer_common_calc(1 , bar);//パターン1
 					}
 					else//BPM変動開始から別のBPM変動が近い
 					{
-						Area_pointer_common_calc(2, bar);//パターン2
+						Area_pointer_common_calc(2 , bar);//パターン2
 					}
 					//if (bpm_list_index < Sd.BPM_List.Length)変更前
-					if (bpm_list_index == (Sd.BPM_List.Length - 1) || Sd.BPM_List[bpm_list_index + 1].count >= bar * note_resolution)
+					if (bpm_list_index == ( Sd.BPM_List.Length - 1 ) || Sd.BPM_List[bpm_list_index + 1].count >= bar * note_resolution)
 					{//このようにしている理由:forの条件判定はインクリメントよりも後のため、bpm_list_indexがList.Lengthより多くなった状態でforから抜けてしまい、ぬるぽの原因になる。
 					 //そのためインクリメントする前にfor文を抜けさせるためにbreakを使っている
 					 //条件1→その小節での最後のBPM変動がそのまま曲中最後のBPM変動だった場合
@@ -132,11 +141,11 @@ public class Score_load : MonoBehaviour
 					}
 				}
 				//小節内最後のBPM変動から次の小節までの区間の計算
-				Area_pointer_common_calc(3, bar);//パターン3
+				Area_pointer_common_calc(3 , bar);//パターン3
 			}
 			else//BPM変動がない
 			{
-				Area_pointer_common_calc(4, bar);//パターン4
+				Area_pointer_common_calc(4 , bar);//パターン4
 			}
 		}
 	}
@@ -150,7 +159,7 @@ public class Score_load : MonoBehaviour
 	/// </summary>
 	/// <param name="pattern">区間パターン</param>
 	/// <param name="bar">現在小節</param>
-	void Area_pointer_common_calc (int pattern, int bar)
+	void Area_pointer_common_calc ( int pattern , int bar )
 	{
 		//↓この2つで1区間(小節)の範囲を指定する
 		double head_cnt = 0;
@@ -162,16 +171,16 @@ public class Score_load : MonoBehaviour
 		switch (pattern)
 		{
 			case 1:
-				head_cnt = Near_index("bar", Sd.BPM_List[bpm_list_index].count) * note_resolution;
+				head_cnt = Near_index("bar" , Sd.BPM_List[bpm_list_index].count) * note_resolution;
 				break;
 			case 2:
-				head_cnt = Sd.BPM_List[Near_index("BPM", Sd.BPM_List[bpm_list_index].count)].count;
+				head_cnt = Sd.BPM_List[Near_index("BPM" , Sd.BPM_List[bpm_list_index].count)].count;
 				break;
 			case 3:
 				head_cnt = Sd.BPM_List[bpm_list_index].count;
 				break;
 			case 4:
-				head_cnt = (bar - 1) * note_resolution;
+				head_cnt = ( bar - 1 ) * note_resolution;
 				break;
 			default:
 				break;
@@ -195,8 +204,8 @@ public class Score_load : MonoBehaviour
 		else if (pattern == 4)
 		{
 			//使ってないのでは？
-	    double BPM;
-			BPM = Sd.BPM_List[Near_index("BPM", foot_cnt)].value;
+			double BPM;
+			BPM = Sd.BPM_List[Near_index("BPM" , foot_cnt)].value;
 		}
 
 
@@ -204,13 +213,13 @@ public class Score_load : MonoBehaviour
 		{
 			case 1:
 			case 3:
-				area_time = Area_time_calc(area_cnt, Sd.BPM_List[bpm_list_index].value);
+				area_time = Area_time_calc(area_cnt , Sd.BPM_List[bpm_list_index].value);
 				break;
 			case 2:
-				area_time = Area_time_calc(area_cnt, Sd.BPM_List[bpm_list_index - 1].value);
+				area_time = Area_time_calc(area_cnt , Sd.BPM_List[bpm_list_index - 1].value);
 				break;
 			case 4:
-				area_time = Area_time_calc(note_resolution, Sd.BPM_List[bpm_list_index].value);
+				area_time = Area_time_calc(note_resolution , Sd.BPM_List[bpm_list_index].value);
 				break;
 			default:
 				break;
@@ -218,16 +227,16 @@ public class Score_load : MonoBehaviour
 
 		if (pattern == 1 || pattern == 2)
 		{
-			area_one_cnt_time = Time_par_cnt(area_time, area_cnt);
+			area_one_cnt_time = Time_par_cnt(area_time , area_cnt);
 		}
 		else if (pattern == 3 || pattern == 4)
 		{
-			area_one_cnt_time = Time_par_cnt(area_time, note_resolution);
+			area_one_cnt_time = Time_par_cnt(area_time , note_resolution);
 		}
 
 
-		Note_search(head_cnt, foot_cnt, area_one_cnt_time);
-		Long_calc(2, head_cnt, foot_cnt, area_one_cnt_time);
+		Note_search(head_cnt , foot_cnt , area_one_cnt_time);
+		Long_calc(2 , head_cnt , foot_cnt , area_one_cnt_time);
 		up_to_time += area_time;
 
 
@@ -240,7 +249,7 @@ public class Score_load : MonoBehaviour
 	/// <param name="head_cnt"></param>
 	/// <param name="foot_cnt"></param>
 	/// <param name="area_one_cnt_time"></param>
-	private void Note_search(double head_cnt, double foot_cnt, double area_one_cnt_time)
+	private void Note_search ( double head_cnt , double foot_cnt , double area_one_cnt_time )
 	{
 		//↓区間にノートが存在しているか
 		if (head_cnt <= Sd.note_List[note_list_index].count && Sd.note_List[note_list_index].count < foot_cnt)
@@ -248,7 +257,7 @@ public class Score_load : MonoBehaviour
 			for (; ; Add_note_list_index())
 			{
 				int type = 0;
-				if (Sd.note_List[note_list_index].flickAngle != 0 )
+				if (Sd.note_List[note_list_index].flickAngle != 0)
 				{
 					type = 1;//フリック
 				}
@@ -256,8 +265,8 @@ public class Score_load : MonoBehaviour
 				{
 					type = 2;//ホールド
 				}
-				temp_note_time = Timing_calc(head_cnt, foot_cnt, area_one_cnt_time);
-				Long_calc(1, head_cnt, foot_cnt, area_one_cnt_time);
+				temp_note_time = Timing_calc(head_cnt , foot_cnt , area_one_cnt_time);
+				Long_calc(1 , head_cnt , foot_cnt , area_one_cnt_time);
 				Fc.Main_figure_calc(type , Sd.note_List[note_list_index].rotation ,//位置角度計算の呼び出し
 														Sd.note_List[note_list_index].positionIndex ,
 														Sd.note_List[note_list_index].freeX ,
@@ -265,10 +274,9 @@ public class Score_load : MonoBehaviour
 														Sd.note_List[note_list_index].flickAngle
 														);
 				temp_note_pos = Fc.Get_Note_pos_result();//figure_calcの計算結果を取得
-				Sync_note_search();
 				temp_start_time = Note_startTime_calc(Note_steamTime_calc());
 				Note_data_add();//全ての計算を終えて格納
-				if (note_list_index == (Sd.note_List.Length - 1))//今見ているノートが全体の最後
+				if (note_list_index == ( Sd.note_List.Length - 1 ))//今見ているノートが全体の最後
 				{
 					break;
 					//Debug.Log("ff");
@@ -290,7 +298,7 @@ public class Score_load : MonoBehaviour
 	/// <param name="head_cnt"></param>
 	/// <param name="foot_cnt"></param>
 	/// <param name="area_one_cnt_time"></param>
-	private double Timing_calc(double head_cnt, double foot_cnt, double area_one_cnt_time)
+	private double Timing_calc ( double head_cnt , double foot_cnt , double area_one_cnt_time )
 	{
 		double temp_note_time;
 		double distance;//区間の頭からノーツまでのcnt距離
@@ -321,7 +329,7 @@ public class Score_load : MonoBehaviour
 					temp_holdend_time = up_to_time + ( distance * area_one_cnt_time );//区間先頭の時間＋ホールド終了の時間
 					Debug.Log(temp_holdend_time);
 				}
-				else
+				else//範囲内ではない
 				{
 					long_list[Sd.note_List[note_list_index].part].state = 1;
 					long_list[Sd.note_List[note_list_index].part].note_list_index = note_list_index;
@@ -332,11 +340,11 @@ public class Score_load : MonoBehaviour
 				}
 			}
 		}
-		else if (mode == 2)//こっちが呼ばれないっぽい
+		else if (mode == 2)//区間終了時に呼び出す
 		{
 			for (int i = 0; i < long_list.Length; i++)
 			{
-				if (long_list[i].state == 1)//ホールドがある区間で呼ばれた場合
+				if (long_list[i].state == 1)//ホールド始点がある区間で呼ばれた場合
 				{
 					long_list[i].state = 2;
 				}
@@ -352,18 +360,20 @@ public class Score_load : MonoBehaviour
 						{
 							if (long_list[i].temp_id == temp_note_data_list_line1[j].hold_end_time)
 							{
-								temp_note_data_list_line1[j].hold_end_time = temp_holdend_time + Sd.offset + startOffset;
-								Debug.Log("hold_end_time "  + temp_note_data_list_line1[j].hold_end_time);
+								temp_note_data_list_line1[j].hold_end_time = temp_holdend_time + Sd.total_offset + startOffset;
+								Debug.Log("hold_end_time " + temp_note_data_list_line1[j].hold_end_time);
 								Debug.Log("parfectTime " + temp_note_data_list_line1[j].parfectTime);
 							}
 						}
-
-
-
-
-
-
-
+						for (int j = 0; j < temp_note_data_list_line2.Count; j++)
+						{
+							if (long_list[i].temp_id == temp_note_data_list_line2[j].hold_end_time)
+							{
+								temp_note_data_list_line2[j].hold_end_time = temp_holdend_time + Sd.total_offset + startOffset;
+								Debug.Log("hold_end_time " + temp_note_data_list_line2[j].hold_end_time);
+								Debug.Log("parfectTime " + temp_note_data_list_line2[j].parfectTime);
+							}
+						}
 					}
 				}
 			}
@@ -371,21 +381,6 @@ public class Score_load : MonoBehaviour
 	}
 
 
-
-	/// <summary>
-	/// 同時押しノートを探す
-	/// </summary>
-	void Sync_note_search()
-	{
-		temp_sync_notes = 0;
-		if (note_list_index != 0)//最初のノート以外
-		{
-			if (Sd.note_List[note_list_index].count == Sd.note_List[note_list_index - 1].count)
-			{
-				temp_sync_notes = 1;
-			}
-		}
-	}
 
 	/*-------------------------------以下補助使用メソッド---------------------------------------*/
 
@@ -395,10 +390,10 @@ public class Score_load : MonoBehaviour
 	/// </summary>
 	/// <param name="foot_cnt"></param>
 	/// <returns></returns>
-	private bool Break_term(int foot_cnt)
+	private bool Break_term ( int foot_cnt )
 	{
 		bool continues;
-		if (foot_cnt <= (Sd.note_List[Sd.note_List.Length - 1].count + note_resolution * bar_extend))
+		if (foot_cnt <= ( Sd.note_List[Sd.note_List.Length - 1].count + note_resolution * bar_extend ))
 		{
 			continues = true;
 		}
@@ -415,11 +410,11 @@ public class Score_load : MonoBehaviour
 	/// </summary>
 	/// <param name="bar">現在の小節</param>
 	/// <returns></returns>
-	private bool Has_BPM_changed(int bar)
+	private bool Has_BPM_changed ( int bar )
 	{
 		bool has_change;
 		int change_count = 0;
-		double head_area_cnt = (bar - 1) * note_resolution;
+		double head_area_cnt = ( bar - 1 ) * note_resolution;
 		double foot_area_cnt = bar * note_resolution;
 		for (int i = 0; i < Sd.BPM_List.Length; i++)
 		{  //その小節の中にBPM変動があるか
@@ -449,13 +444,13 @@ public class Score_load : MonoBehaviour
 	/// </summary>
 	/// <param name="point_cnt">point_cnt</param>
 	/// <returns></returns>
-	private int Witch_near(double point_cnt)
+	private int Witch_near ( double point_cnt )
 	{
 		int answer = 0;//0は小節1はBPM
 		double point_bar_cnt;
 		double point_BPM_cnt;
-		point_bar_cnt = note_resolution * Near_index("bar", point_cnt);
-		int BPM_index = Near_index("BPM", point_cnt);
+		point_bar_cnt = note_resolution * Near_index("bar" , point_cnt);
+		int BPM_index = Near_index("BPM" , point_cnt);
 		//Debug.Log("BPM_index " + BPM_index);
 		point_BPM_cnt = Sd.BPM_List[BPM_index].count;
 		if (point_bar_cnt > point_BPM_cnt)//数が大きい方が近い
@@ -475,12 +470,12 @@ public class Score_load : MonoBehaviour
 	/// <param name="area_cnt"></param>
 	/// <param name="BPM"></param>
 	/// <returns></returns>
-	private double Area_time_calc(double area_cnt, double BPM)
+	private double Area_time_calc ( double area_cnt , double BPM )
 	{
 		double area_time;
 		double beat = 4;//拍子。pxbpは変拍子非対応なのでとりあえずは4固定。
 										//60*4*{ (その区間のcnt/48=拍数)/4(拍子) }/その区間のBPM
-		area_time = 60 * beat * ((area_cnt / one_beat_cnt) / 4) / BPM;
+		area_time = 60 * beat * ( ( area_cnt / one_beat_cnt ) / 4 ) / BPM;
 
 		return area_time;
 	}
@@ -491,7 +486,7 @@ public class Score_load : MonoBehaviour
 	/// <param name="area_time"></param>
 	/// <param name="cnt"></param>
 	/// <returns></returns>
-	private double Time_par_cnt(double area_time, double cnt)
+	private double Time_par_cnt ( double area_time , double cnt )
 	{
 		double one_cnt_time;
 		one_cnt_time = area_time / cnt;
@@ -505,13 +500,13 @@ public class Score_load : MonoBehaviour
 	/// <param name="mode">bar or BPM(bpm)</param>
 	/// <param name="point_cnt">point_cnt</param>
 	/// <returns></returns>
-	private int Near_index(string mode, double point_cnt)
+	private int Near_index ( string mode , double point_cnt )
 	{
 		//modeは1→小節 2がBPM
 		int index = 0;
 		if (mode == "bar")//最も近い小節を返す
 		{
-			index = (int)(point_cnt / note_resolution);
+			index = (int)( point_cnt / note_resolution );
 		}
 		else if (mode == "bpm" || mode == "BPM")//最も近いBPM帯を返す
 		{
@@ -534,7 +529,7 @@ public class Score_load : MonoBehaviour
 					}
 					break;
 				}
-				else if (i == (Sd.BPM_List.Length - 1) && Sd.BPM_List[i].count <= point_cnt)//ノートの前までにBPM変動が全て終わっている場合
+				else if (i == ( Sd.BPM_List.Length - 1 ) && Sd.BPM_List[i].count <= point_cnt)//ノートの前までにBPM変動が全て終わっている場合
 				{
 					index = i;
 				}
@@ -548,7 +543,7 @@ public class Score_load : MonoBehaviour
 	/// 音符を流すのにかかる時間を計算
 	/// </summary>
 	/// <returns></returns>
-	double Note_steamTime_calc()
+	double Note_steamTime_calc ()
 	{
 		double Now_BPM = Sd.BPM_List[bpm_list_index].value;
 		double base_steam_time = 3;
@@ -564,17 +559,17 @@ public class Score_load : MonoBehaviour
 	/// </summary>
 	/// <param name="steam_time"></param>
 	/// <returns></returns>
-	double Note_startTime_calc(double steam_time)
+	double Note_startTime_calc ( double steam_time )
 	{
 		double temp_start_time;
-			temp_start_time = temp_note_time - steam_time;
+		temp_start_time = temp_note_time - steam_time;
 		return temp_start_time;
 	}
 
-	
 
 
-	private void Note_data_add()
+
+	private void Note_data_add ()
 	{
 		Note_data note_Data = new Note_data();
 		int noteType = 0;//タッチ
@@ -586,48 +581,49 @@ public class Score_load : MonoBehaviour
 		{
 			noteType = 2;//ホールド
 		}
-		note_Data.noteType       = noteType;
-		note_Data.startTime      = temp_start_time + Sd.offset + startOffset;   //temp_start_time + Sd.offset
-		note_Data.steamTime      = (float)note_steam_time;
-		note_Data.parfectTime    = (float)( temp_note_time + Sd.offset + perfectOffset );
+		note_Data.noteType = noteType;
+		note_Data.startTime = temp_start_time + Sd.total_offset + startOffset;   //temp_start_time + Sd.offset
+		note_Data.steamTime = (float)note_steam_time;
+		note_Data.parfectTime = (float)( temp_note_time + Sd.total_offset + perfectOffset );
 		note_Data.note_end_pos.x = (float)temp_note_pos[0];
 		note_Data.note_end_pos.y = (float)temp_note_pos[1];
-		note_Data.note_pos1.x    = (float)temp_note_pos[2];
-		note_Data.note_pos1.y    = (float)temp_note_pos[3];
-		note_Data.note_pos2.x    = (float)temp_note_pos[4];
-		note_Data.note_pos2.y    = (float)temp_note_pos[5];
+		note_Data.note_pos1.x = (float)temp_note_pos[2];
+		note_Data.note_pos1.y = (float)temp_note_pos[3];
+		note_Data.note_pos2.x = (float)temp_note_pos[4];
+		note_Data.note_pos2.y = (float)temp_note_pos[5];
 
 
 		if (noteType == 2)
 		{
-			note_Data.note_pos3.x  = (float)temp_note_pos[6];
-			note_Data.note_pos3.y  = (float)temp_note_pos[7];
-			note_Data.note_pos4.x  = (float)temp_note_pos[8];
-			note_Data.note_pos4.y  = (float)temp_note_pos[9];
+			note_Data.note_pos3.x = (float)temp_note_pos[6];
+			note_Data.note_pos3.y = (float)temp_note_pos[7];
+			note_Data.note_pos4.x = (float)temp_note_pos[8];
+			note_Data.note_pos4.y = (float)temp_note_pos[9];
 		}
-		if (noteType == 1)//フリック
-		{
-			note_Data.flick_pos.x = (float)temp_note_pos[10];
-			note_Data.flick_pos.y = (float)temp_note_pos[11];
-			//Debug.Log("note_list_index " + note_list_index);
-			//Debug.Log("flick_x " + note_Data.flick_pos.x);
-			//Debug.Log("flick_y " + note_Data.flick_pos.y);
-		}
+		//note ノートパターンに関わらず値を入れる。
+		//フリックノートでない場合確実に反応しない値を入れる必要があるため
+		note_Data.flick_pos.x = (float)temp_note_pos[10];
+		note_Data.flick_pos.y = (float)temp_note_pos[11];
+		//Debug.Log("note_list_index " + note_list_index);
+		//Debug.Log("load flick_x " + note_Data.flick_pos.x);
+		//Debug.Log(" flick_y " + note_Data.flick_pos.y);
+
 		if (temp_holdend_time < 0)//temp_idと揃えるためにマイナスの値が入っている場合
 		{
 			note_Data.hold_end_time = temp_holdend_time;
 		}
 		else
 		{
-			note_Data.hold_end_time = temp_holdend_time + Sd.offset + startOffset;
+			note_Data.hold_end_time = temp_holdend_time + Sd.total_offset + startOffset;
 		}
-		note_Data.rotation       = ( -1 ) * (float)Sd.note_List[note_list_index].rotation;
-		note_Data.syncTimes      = temp_sync_notes;
-		note_Data.judged         = false;
-		note_Data.made           = false;
+		note_Data.rotation = ( -1 ) * (float)Sd.note_List[note_list_index].rotation;
+		note_Data.sync = false;
+		note_Data.judged = false;
+		note_Data.made = false;
 
+		Note_allocation(note_Data);
 
-		switch (temp_sync_notes)//同時押しによって挿入先を変える
+		switch (1)//同時押しによって挿入先を変える
 		{
 			case 0:
 				temp_note_data_list_line1.Add(note_Data);
@@ -642,10 +638,42 @@ public class Score_load : MonoBehaviour
 			default:
 				break;
 		}
-		
+
 	}
 
-	
+
+	/// <summary>
+	/// ノートをどのlineに入れるか、そして同時押しの判断
+	/// </summary>
+	void Note_allocation ( Note_data note_Data)
+	{
+		int list1_index = ( temp_note_data_list_line1.Count - 1 );
+		int list2_index = ( temp_note_data_list_line2.Count - 1 );
+		if (list1_index < 0) { list1_index = 0; }
+		if (list2_index < 0) { list2_index = 0; }
+		
+		if (temp_note_data_list_line1.Count == 0 && temp_note_data_list_line2.Count == 0)//最初のノート
+		{
+			temp_note_data_list_line1.Add(note_Data);
+		}
+		else if (temp_note_data_list_line1[list1_index].parfectTime == note_Data.parfectTime)
+		{
+			note_Data.sync = true;
+			temp_note_data_list_line1[list1_index].sync = true;
+			temp_note_data_list_line2.Add(note_Data);
+		}
+
+
+
+		//else if (temp_note_data_list_line1[list1_index].parfectTime + poorTime <=)
+		//{
+
+		//}
+	}
+
+
+
+
 
 	/// <summary>
 	/// 譜面中のノートの計算終了後、Dcへとnote_data_listを受け渡すためのメソッド
@@ -668,7 +696,6 @@ public class Score_load : MonoBehaviour
 			//Debug.Log(i);
 			//Debug_note_data_show(2 , temp_note_data_list_line2[i]);
 		}
-		Dc.Set_MusicfileName(MusicfilesName);
 	}
 
 
@@ -681,7 +708,7 @@ public class Score_load : MonoBehaviour
 		public double end_cnt;
 
 		public Long_struct
-			(int note_list_index , int state ,int temp_id , double end_cnt )
+			( int note_list_index , int state , int temp_id , double end_cnt )
 		{
 			this.note_list_index = note_list_index;
 			this.state = state;
@@ -691,31 +718,31 @@ public class Score_load : MonoBehaviour
 		}
 	}
 
-	
-	void Debug_note_data_show (int line , Note_data note_Data)
+
+	void Debug_note_data_show ( int line , Note_data note_Data )
 	{
 		Debug.Log("insert line " + line);
-		//Debug.Log("startTime " +  note_Data.startTime);
-		//Debug.Log("steamTime " + note_Data.steamTime);
+		Debug.Log("startTime " + note_Data.startTime);
+		Debug.Log("steamTime " + note_Data.steamTime);
 		Debug.Log("parfectTime " + note_Data.parfectTime);
 		Debug.Log("note_end_pos.x " + note_Data.note_end_pos.x);
 		Debug.Log("note_end_pos.y " + note_Data.note_end_pos.y);
-		//Debug.Log("note_pos1.x " + note_Data.note_pos1.x);
-		//Debug.Log("note_pos1.y " + note_Data.note_pos1.y);
-		//Debug.Log("note_pos2.x " + note_Data.note_pos2.x);
-		//Debug.Log("note_pos2.y " + note_Data.note_pos2.y);
-		//Debug.Log("note_pos3.x " + note_Data.note_pos3.x);
-		//Debug.Log("note_pos3.y " + note_Data.note_pos3.y);
-		//Debug.Log("note_pos4.x " + note_Data.note_pos4.x);
-		//Debug.Log("note_pos4.y " + note_Data.note_pos4.y);
-		//Debug.Log("endCnt " + note_Data.endCnt);
-		//Debug.Log("rotation " + note_Data.rotation);
-		//Debug.Log("flickAngle " + note_Data.flickAngle);
-		//Debug.Log("startTime " + note_Data.startTime);
-		//Debug.Log("syncTimes " + note_Data.syncTimes);
-		//Debug.Log("alive " + note_Data.judged);
-		//Debug.Log("made " + note_Data.made);
+		Debug.Log("note_pos1.x " + note_Data.note_pos1.x);
+		Debug.Log("note_pos1.y " + note_Data.note_pos1.y);
+		Debug.Log("note_pos2.x " + note_Data.note_pos2.x);
+		Debug.Log("note_pos2.y " + note_Data.note_pos2.y);
+		Debug.Log("note_pos3.x " + note_Data.note_pos3.x);
+		Debug.Log("note_pos3.y " + note_Data.note_pos3.y);
+		Debug.Log("note_pos4.x " + note_Data.note_pos4.x);
+		Debug.Log("note_pos4.y " + note_Data.note_pos4.y);
+		Debug.Log("hold_end_time " + note_Data.hold_end_time);
+		Debug.Log("rotation " + note_Data.rotation);
+		Debug.Log("flick_pos " + note_Data.flick_pos);
+		Debug.Log("startTime " + note_Data.startTime);
+		Debug.Log("sync " + note_Data.sync);
+		Debug.Log("alive " + note_Data.judged);
+		Debug.Log("made " + note_Data.made);
 		Debug.Log("-------------------------------------");
 	}
-	
+
 }

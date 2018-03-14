@@ -41,9 +41,7 @@ public class File_load : MonoBehaviour
 	}
 	
 
-
-
-
+	
 	/// <summary>
 	/// 環境ごとの自由にアクセスできる場所のパスを返す
 	/// </summary>
@@ -63,6 +61,7 @@ public class File_load : MonoBehaviour
 				break;
 			case RuntimePlatform.WindowsEditor:
 				filepath = Application.dataPath;
+				filepath += "/../ファイル";//1階層上がる
 				//debug_text.GetComponent<Text>().text = filepath;
 				break;
 			case RuntimePlatform.Android:

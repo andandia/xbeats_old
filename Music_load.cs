@@ -33,15 +33,15 @@ public class Music_load : MonoBehaviour
 
 
 
-	// Use this for initialization
-	void Start ()
+	
+	 public void To_be_load (string MusicfileName )
 	{
 		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Play")
 		{
 			Dc_OBJ = GameObject.FindGameObjectWithTag("Dc");
 			Dc = Dc_OBJ.GetComponent<Data_cabinet>();
 			Dc.Set_BGM_Play(audioSource);
-			Load_music(Dc.Get_MusicfileName());
+			Load_music(MusicfileName);
 		}
 		
 	}

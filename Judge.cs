@@ -16,10 +16,11 @@ public class Judge : MonoBehaviour
 	Note_data note_Data_line1;
 	Note_data note_Data_line2;
 
-	[SerializeField] float perfectTime;//初期 0.02
-	[SerializeField] float greatTime;// 0.04
-	[SerializeField] float goodTime;// 0.1
-	[SerializeField] float poorTime;// 0.15
+	//Set_judgeTimeで定義されている
+	float perfectTime;//初期 0.02
+	float greatTime;// 0.04
+	float goodTime;// 0.1
+	float poorTime;// 0.15
 
 	[SerializeField] debug_disp_info debug_Disp_Info;
 
@@ -43,6 +44,11 @@ public class Judge : MonoBehaviour
 		Dc.Set_Time_Script(time);
 		ops.Set_Dc_Script(Dc);
 		CriAtom.SetBusAnalyzer(false);
+		perfectTime = PlayerPrefs.GetFloat("perfectTime");
+		greatTime = PlayerPrefs.GetFloat("greatTime");
+		goodTime = PlayerPrefs.GetFloat("goodTime");
+		poorTime = PlayerPrefs.GetFloat("poorTime");
+
 	}
 
 
@@ -60,33 +66,72 @@ public class Judge : MonoBehaviour
 	/// <param name="my_Touch"></param>
 	public void Main_judge ( int touchType , Touch_Manager.My_touch my_Touch )
 	{
-
+		//Debug.Log("judege ");
 		note_Data_line1 = Dc.Get_Judge_note_data(1);
 		if (Dc.Note_data_list_line2.Length != 0)
 		{
 			note_Data_line2 = Dc.Get_Judge_note_data(2);
 		}
-		if (Is_touch_within_range(my_Touch.touchPos))
+
+		if (touchType == 0)//タッチorホールド始点のとき
 		{
-			int hold_note_data_index = 0;
-			Note_data note_Data = new Note_data();
-			switch (within_range_line)
+			if (Is_touch_within_range(my_Touch.touchPos))
 			{
-				case 1:
-					hold_note_data_index = Dc.judge_Index.get_note_data_line1;//note_data.made_note_indexでいいのでは
-					note_Data = note_Data_line1;
-					break;
-				case 2:
-					hold_note_data_index = Dc.judge_Index.get_note_data_line2;
-					note_Data = note_Data_line2;
-					break;
-				default:	break;
-			}
-			if (note_Data.noteType == 0 || note_Data.noteType == 2)
-			{
-				Time_judge(note_Data, within_range_line , hold_note_data_index , my_Touch.touchTime , my_Touch.fingerID);
+				int hold_note_data_index = 0;
+				Note_data note_Data = new Note_data();
+				switch (within_range_line)
+				{
+					case 1:
+						hold_note_data_index = Dc.judge_Index.get_note_data_line1;
+						note_Data = note_Data_line1;
+						break;
+					case 2:
+						hold_note_data_index = Dc.judge_Index.get_note_data_line2;
+						note_Data = note_Data_line2;
+						break;
+					default: break;
+				}
+				if (note_Data.judged == false)//まだ未判定
+				{
+					if (note_Data.noteType == 0 || note_Data.noteType == 2)
+					{
+						Time_judge(note_Data , within_range_line , hold_note_data_index , my_Touch.touchTime , my_Touch.fingerID);
+					}
+				}
+				else
+				{
+					return;
+				}
 			}
 		}
+		else if (touchType == 1)//フリックのとき
+		{
+			if (Is_Swipe_within_range(my_Touch.touchPos))
+			{
+				Note_data note_Data = new Note_data();
+				switch (within_range_line)
+				{
+					case 1:
+						//hold_note_data_index = Dc.judge_Index.get_note_data_line1;//note_data.made
+						note_Data = note_Data_line1;
+						break;
+					case 2:
+						//hold_note_data_index = Dc.judge_Index.get_note_data_line2;
+						note_Data = note_Data_line2;
+						break;
+					default: break;
+				}
+				if (note_Data.judged == false)//まだ未判定
+				{
+					Time_judge(note_Data , within_range_line , -1 , my_Touch.touchTime , my_Touch.fingerID);
+				}
+				else
+				{
+					return;
+				}
+			}
+		}
+
 
 	}
 
@@ -107,7 +152,8 @@ public class Judge : MonoBehaviour
 				return true;
 			}
 		}
-		if (touchpos.x <= note_Data_line2.note_end_pos.x + touchwidth
+		if (note_Data_line2 != null &&
+				 touchpos.x <= note_Data_line2.note_end_pos.x + touchwidth
 			&& touchpos.x >= note_Data_line2.note_end_pos.x - touchwidth)
 		{
 			if (touchpos.y <= note_Data_line2.note_end_pos.y + touchwidth
@@ -138,6 +184,33 @@ public class Judge : MonoBehaviour
 		}
 		return false;
 
+	}
+
+
+
+	bool Is_Swipe_within_range ( Vector2 touchpos )
+	{
+		if (touchpos.x <= note_Data_line1.flick_pos.x + touchwidth
+			&& touchpos.x >= note_Data_line1.flick_pos.x - touchwidth)
+		{
+			if (touchpos.y <= note_Data_line1.flick_pos.y + touchwidth
+			&& touchpos.y >= note_Data_line1.flick_pos.y - touchwidth)
+			{
+				within_range_line = 1;
+				return true;
+			}
+		}
+		if (touchpos.x <= note_Data_line2.flick_pos.x + touchwidth
+			&& touchpos.x >= note_Data_line2.flick_pos.x - touchwidth)
+		{
+			if (touchpos.y <= note_Data_line2.flick_pos.y + touchwidth
+			&& touchpos.y >= note_Data_line2.flick_pos.y - touchwidth)
+			{
+				within_range_line = 2;
+				return true;
+			}
+		}
+		return false;
 	}
 
 
@@ -203,16 +276,21 @@ public class Judge : MonoBehaviour
 	void After_judge ( int judgetype ,  int line , int fingerID , int hold_note_data_index ,float hold_time ,Note_data note_Data)
 	{
 		SE_Player.Play_touch_sound(judgetype);
+		Dc.Set_judge_note_data_judged(line);
 		effect_Manager.Play_Particle(judgetype , note_Data.note_end_pos);
+
 		if (note_Data.noteType == 2 && judgetype != 4)//ホールドかつpoorでないなら
 		{
 			touch_Manager.Set_Hold(fingerID , hold_note_data_index , within_range_line);
 			Hold_process(line , hold_note_data_index , hold_time);
 			ops.DestroyNote(line , note_Data.made_note_list_index , true, false);
+			Debug.Log("line "  + line);
+			Debug.Log("hold_end_time " + note_Data.hold_end_time);
 		}
 		else if (note_Data.noteType == 0 || note_Data.noteType == 1)
 		{
 			ops.DestroyNote(line, note_Data.made_note_list_index , false , false);
+			//Debug.Log("破壊 " + note_Data.made_note_list_index);
 		}
 
 	}
@@ -283,8 +361,9 @@ public class Judge : MonoBehaviour
 			{
 				if (Dc.Get_judge_note_is_judged(1) == false)
 				{
-					//Debug.Log("Through… " + 1);
+					Debug.Log("Through… " + 1);
 					//debug_Disp_Info.disp_judge(5);
+					Dc.Set_judge_note_data_judged(1);
 					ops.DestroyNote(1, Dc.Get_judge_made_note_list_index(1), false , false);
 				}
 			}
@@ -295,8 +374,9 @@ public class Judge : MonoBehaviour
 			{
 				if (Dc.Get_judge_note_is_judged(2) == false)
 				{
-					//Debug.Log("Through… " + 2);
+					Debug.Log("Through… " + 2);
 					//debug_Disp_Info.disp_judge(5);
+					Dc.Set_judge_note_data_judged(2);
 					ops.DestroyNote(2, Dc.Get_judge_made_note_list_index(2), false , false);
 				}
 			}

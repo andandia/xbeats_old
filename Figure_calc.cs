@@ -45,24 +45,29 @@ public class Figure_calc : MonoBehaviour
 	/// <param name="positionIndex"></param>
 	/// <param name="freeX"></param>
 	/// <param name="freeY"></param>
-	public void Main_figure_calc(int notetype, double rotation, int positionIndex, double freeX, double freeY ,double flickAngle )
+	public void Main_figure_calc ( int notetype , double rotation , int positionIndex , double freeX , double freeY , double flickAngle )
 	{
 		Screen_width_setup();
-		Convert_worldpos(positionIndex, freeX, freeY);
+		Convert_worldpos(positionIndex , freeX , freeY);
 		if (rotation % 90 == 0)//直角なら
 		{
-			Lpos_decide(notetype, rotation);
+			Lpos_decide(notetype , rotation);
 		}
 		else
 		{
 			Angle_calc(rotation);
-			Pos_decide(notetype, rotation);
-			
-			
+			Pos_decide(notetype , rotation);
+
+
 		}
 		if (notetype == 1)
 		{
-			flick_pos_decide(flickAngle);
+			Flick_pos_decide(flickAngle);
+		}
+		else
+		{
+			note_line.flick_pos_x = 100;
+			note_line.flick_pos_y = 100;
 		}
 		/*実際の流れ
 		Screen_width_setup();で画面サイズ類を定義
@@ -76,7 +81,7 @@ public class Figure_calc : MonoBehaviour
 		 */
 	}
 
-	private void Screen_width_setup()
+	private void Screen_width_setup ()
 	{
 		display_size.xMax = 13.65;
 		display_size.xMin = -13.65;
@@ -84,19 +89,19 @@ public class Figure_calc : MonoBehaviour
 		display_size.yMin = -7.68;
 		display_size.note_pos_xMin = -6.27;//ノートが置かれるxの最小点
 		display_size.note_pos_yMax = 4;
-		display_size.note_pos_xMin = display_size.note_pos_xMin + (display_size.note_pos_xMin / 3);//幅と絶対座標をあわせるために1つ分増やす
-		display_size.note_pos_yMax = display_size.note_pos_yMax + (display_size.note_pos_yMax / 2);
+		display_size.note_pos_xMin = display_size.note_pos_xMin + ( display_size.note_pos_xMin / 3 );//幅と絶対座標をあわせるために1つ分増やす
+		display_size.note_pos_yMax = display_size.note_pos_yMax + ( display_size.note_pos_yMax / 2 );
 		display_size.note_disp_width_x = display_size.note_pos_xMin * 2;
 		display_size.note_disp_width_y = display_size.note_pos_yMax * 2;
-		display_size.pos_unit_x = display_size.note_disp_width_x / (7 + 1);//pos_unit_xyから修正
-		display_size.pos_unit_y = display_size.note_disp_width_y / (5 + 1);
-		display_size.free_width_x = display_size.note_disp_width_x - (display_size.pos_unit_x * 0.8);
-		display_size.free_width_y = display_size.note_disp_width_y - (display_size.pos_unit_y * 0.8);
-		display_size.free_unit_x = display_size.free_width_x / (1 / 0.02);
-		display_size.free_unit_y = display_size.free_width_y / (1 / 0.02);
+		display_size.pos_unit_x = display_size.note_disp_width_x / ( 7 + 1 );//pos_unit_xyから修正
+		display_size.pos_unit_y = display_size.note_disp_width_y / ( 5 + 1 );
+		display_size.free_width_x = display_size.note_disp_width_x - ( display_size.pos_unit_x * 0.8 );
+		display_size.free_width_y = display_size.note_disp_width_y - ( display_size.pos_unit_y * 0.8 );
+		display_size.free_unit_x = display_size.free_width_x / ( 1 / 0.02 );
+		display_size.free_unit_y = display_size.free_width_y / ( 1 / 0.02 );
 	}
 
-	private void Convert_worldpos(int positionIndex, double freeX, double freeY)
+	private void Convert_worldpos ( int positionIndex , double freeX , double freeY )
 	{
 		double pos_x = 0;
 		double pos_y = 0;
@@ -116,9 +121,9 @@ public class Figure_calc : MonoBehaviour
 			そうでない場合positionIndexを7で割ったあまりを
 			指定している。
 			 */
-			for (int line = 1; line < 6 ; line++)
+			for (int line = 1; line < 6; line++)
 			{
-				if (positionIndex >= (line * 7 - 6) && positionIndex < ( (line + 1) * 7 - 6 ) )
+				if (positionIndex >= ( line * 7 - 6 ) && positionIndex < ( ( line + 1 ) * 7 - 6 ))
 				{
 					if (positionIndex % 7 == 0)
 					{
@@ -131,23 +136,23 @@ public class Figure_calc : MonoBehaviour
 					abs_y = line;
 				}
 			}
-				//Debug.Log("positionIndex " + positionIndex + " abs_x " + abs_x);
-				//Debug.Log("positionIndex " + positionIndex + " abs_y " + abs_y);
-			pos_x = display_size.note_pos_xMin - (display_size.pos_unit_x * abs_x);
-			pos_y = display_size.note_pos_yMax - (display_size.pos_unit_y * abs_y);
+			//Debug.Log("positionIndex " + positionIndex + " abs_x " + abs_x);
+			//Debug.Log("positionIndex " + positionIndex + " abs_y " + abs_y);
+			pos_x = display_size.note_pos_xMin - ( display_size.pos_unit_x * abs_x );
+			pos_y = display_size.note_pos_yMax - ( display_size.pos_unit_y * abs_y );
 		}
 		else//freeのとき
 		{
 
-			pos_x = (display_size.free_width_x / 2) - display_size.free_unit_x * (freeX / 0.02);
-			pos_y = (display_size.free_width_y / 2) - display_size.free_unit_y * (freeY / 0.02);
+			pos_x = ( display_size.free_width_x / 2 ) - display_size.free_unit_x * ( freeX / 0.02 );
+			pos_y = ( display_size.free_width_y / 2 ) - display_size.free_unit_y * ( freeY / 0.02 );
 		}
 
 		note_line.note_end_pos_x = pos_x;
 		note_line.note_end_pos_y = pos_y;
 	}
 
-	private void Angle_calc(double rotation)
+	private void Angle_calc ( double rotation )
 	{
 		double one = rotation;//パターン1における、rotationで示されている方の角度
 		double two = rotation + 90;
@@ -155,7 +160,7 @@ public class Figure_calc : MonoBehaviour
 		note_line.slope_two = Tan_calc(two) * -1;
 	}
 
-	private void Pos_decide(int type, double rotation)
+	private void Pos_decide ( int type , double rotation )
 	{
 		/*解決すべき点
 		 * 1.oneとtwoでfixed_x,yに入れるべき値が変わってしまい、長ったらしくなる。rotation180のときtwoはrotation90のやつを入れたらよかったりしないか
@@ -207,7 +212,7 @@ public class Figure_calc : MonoBehaviour
 			}
 			string answer_side = "x";
 			double slope = 0;
-			if (i == 1 || i == 3)//todo ホールドのときの挙動確認
+			if (i == 1 || i == 3)
 			{
 				slope = note_line.slope_one;
 			}
@@ -215,12 +220,12 @@ public class Figure_calc : MonoBehaviour
 			{
 				slope = note_line.slope_two;
 			}
-			double temp_pos_move = Equation_answer(answer_side, fixed_x, fixed_y, slope, through_x, through_y);
+			double temp_pos_move = Equation_answer(answer_side , fixed_x , fixed_y , slope , through_x , through_y);
 			double temp_pos_fixed = fixed_y;
-			if (is_inside_area(cross_pattern, temp_pos_move) == false)
+			if (is_inside_area(cross_pattern , temp_pos_move) == false)
 			{
 				answer_side = "y";
-				temp_pos_move = Equation_answer(answer_side, fixed_x, fixed_y, slope, through_x, through_y);
+				temp_pos_move = Equation_answer(answer_side , fixed_x , fixed_y , slope , through_x , through_y);
 				temp_pos_fixed = fixed_x;
 			}
 			if (i == 1 && answer_side == "x")
@@ -266,40 +271,41 @@ public class Figure_calc : MonoBehaviour
 		}
 	}
 
-	void flick_pos_decide (double flickAngle )
+
+	void Flick_pos_decide ( double flickAngle )
 	{
 		double fix_Angle = 360 - flickAngle;//pxbpの角度からunityの角度へ
-		note_line.flick_pos_x = note_line.note_end_pos_x + flick_distance *  ( Mathf.Cos((float)fix_Angle * ( Mathf.PI / 180 )) );
+		note_line.flick_pos_x = note_line.note_end_pos_x + flick_distance * ( Mathf.Cos((float)fix_Angle * ( Mathf.PI / 180 )) );
 		note_line.flick_pos_y = note_line.note_end_pos_y + flick_distance * ( Mathf.Sin((float)fix_Angle * ( Mathf.PI / 180 )) );
 	}
 
 
 
 	//方程式の代入結果を返す
-	private double Equation_answer(string return_hope, double fixed_x, double fixed_y, double slope, double through_x, double through_y)
+	private double Equation_answer ( string return_hope , double fixed_x , double fixed_y , double slope , double through_x , double through_y )
 	{
 		//fixed_x,y = 画面端の固定のxyの値	through_x,y = 方程式が通っている点=ノートの終点
 		double answer = 0;
 		if (return_hope == "x")
 		{
-			answer = through_x + (fixed_y - through_y) / slope;
+			answer = through_x + ( fixed_y - through_y ) / slope;
 		}
 		else if (return_hope == "y")
 		{
-			answer = slope * (fixed_x - through_x) + through_y;
+			answer = slope * ( fixed_x - through_x ) + through_y;
 		}
 		//Debug.Log("answer " + answer);
 		return answer;
 	}
 
-	private double Tan_calc(double angle)
+	private double Tan_calc ( double angle )
 	{
 		double tangent = Mathf.Tan((float)angle * Mathf.Deg2Rad);//ラジアンに変換
 		return tangent;
 	}
 
 
-	int Quadrant_answer(double rotation)
+	int Quadrant_answer ( double rotation )
 	{
 		int quadrant = 0;
 		if (0 < rotation && rotation < 90)
@@ -322,7 +328,7 @@ public class Figure_calc : MonoBehaviour
 	}
 
 	//投げられた値がノート出現範囲内か
-	private bool is_inside_area(int cross_pattern, double aquation_answer)
+	private bool is_inside_area ( int cross_pattern , double aquation_answer )
 	{
 		bool inside = true;
 		if (cross_pattern == 1 || cross_pattern == 4)
@@ -344,20 +350,20 @@ public class Figure_calc : MonoBehaviour
 	}
 
 	/*------------------直角時-----------------------*/
-	void Lpos_decide(int notetype, double rotation)
+	void Lpos_decide ( int notetype , double rotation )
 	{
 		/*タイプで分ける
-		 * ・通常の場合
-		 * 角度で場合わけ
-		 * x=nの線(横線だけを見ると
-		 * 0、270→左端
-		 * 90、180→右端
-		 * y=nの線(縦線だけを見ると
-		 * 0、90→上
-		 * 180、270→下
-		 * ・ホールドの場合
-		 * 上下左右全て
-		 */
+		* ・通常の場合
+		* 角度で場合わけ
+		* x=nの線(横線だけを見ると
+		* 0、270→左端
+		* 90、180→右端
+		* y=nの線(縦線だけを見ると
+		* 0、90→上
+		* 180、270→下
+		* ・ホールドの場合
+		* 上下左右全て
+		*/
 		if (notetype == 0 || notetype == 1)
 		{
 			if (rotation == 0)
@@ -400,12 +406,11 @@ public class Figure_calc : MonoBehaviour
 			note_line.note_pos_four_x = note_line.note_end_pos_x;
 			note_line.note_pos_four_y = display_size.yMin;
 		}
-
 	}
 	/*------------------直角時-----------------------*/
 
 
-	public double[] Get_Note_pos_result()
+	public double[] Get_Note_pos_result ()
 	{
 		double[] note_pos = new double[12];
 		note_pos[0] = note_line.note_end_pos_x;
@@ -420,6 +425,8 @@ public class Figure_calc : MonoBehaviour
 		note_pos[9] = note_line.note_pos_four_y;
 		note_pos[10] = note_line.flick_pos_x;
 		note_pos[11] = note_line.flick_pos_y;
+		//Debug.Log("flick_pos_x " + note_pos[10]);
+		//Debug.Log("flick_pos_y " + note_pos[11]);
 		return note_pos;
 	}
 
@@ -434,11 +441,11 @@ public class Figure_calc : MonoBehaviour
 				flick_pos_x, flick_pos_y;
 
 		public Note_line
-				(double angle_one , double angle_two , double slope_one , double slope_two ,
-				 double note_end_pos_x , double note_end_pos_y , 
-				 double note_pos_one_x , double note_pos_one_y , double note_pos_two_x , double note_pos_two_y , 
+				( double angle_one , double angle_two , double slope_one , double slope_two ,
+				 double note_end_pos_x , double note_end_pos_y ,
+				 double note_pos_one_x , double note_pos_one_y , double note_pos_two_x , double note_pos_two_y ,
 				 double note_pos_three_x , double note_pos_three_y , double note_pos_four_x , double note_pos_four_y ,
-				 double flick_pos_x , double flick_pos_y)
+				 double flick_pos_x , double flick_pos_y )
 		{
 			this.angle_one = angle_one;
 			this.angle_two = angle_two;
@@ -470,13 +477,13 @@ public class Figure_calc : MonoBehaviour
 				free_unit_x, free_unit_y;
 
 		public Display_size
-				(double xx, double xn, double yx, double yn,
-				double ndwx, double ndwy,
-				double fwx, double fwy,
-				double npxM, double npyM,
-				double fpxM, double fpyM,
-				double pux, double puy,
-				double fux, double fuy)
+				( double xx , double xn , double yx , double yn ,
+				double ndwx , double ndwy ,
+				double fwx , double fwy ,
+				double npxM , double npyM ,
+				double fpxM , double fpyM ,
+				double pux , double puy ,
+				double fux , double fuy )
 		{
 			xMax = xx;
 			xMin = xn;

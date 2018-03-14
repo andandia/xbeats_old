@@ -10,6 +10,9 @@ public class LoadDTO : MonoBehaviour {
 	private string MusicName, artistName , filesName;
 	private float startOffset, perfectOffset;
 	private float HS;
+	private float Swipe_distance;
+
+
 
 	void Start ()
 	{
@@ -88,4 +91,16 @@ public class LoadDTO : MonoBehaviour {
 	{
 		this.HS = HS;
 	}
+
+	public void Set_Swipe_distance ( float Swipe_distance )
+	{
+		this.Swipe_distance = Swipe_distance;
+	}
+
+	public float Get_Swipe_distance ()
+	{
+		return Swipe_distance;
+	}
+
+
 }

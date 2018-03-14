@@ -44,10 +44,6 @@ public class GuidelinePool : ObjectPoolSuper
 			if (obj.activeInHierarchy == false)
 			{
 				Set_Guideline_property(noteType,obj);
-				if (noteType == 2)//todo 後で消す
-				{
-					Debug.Log("guideline " + obj.GetInstanceID());
-				}
 				obj.SetActive(true);
 				Set_made_note_Property(obj.GetInstanceID());
 				//Debug.Log("make GetInstanceID " + obj.GetInstanceID());
@@ -57,10 +53,6 @@ public class GuidelinePool : ObjectPoolSuper
 		GameObject newObj = Instantiate(GuidelinePrefab , ops.note_data.note_end_pos , originalRotation);
 		Set_Guideline_property(noteType,newObj);
 		pooledGuideline.Add(newObj);
-		if (noteType ==  2)//todo 後で消す
-		{
-			Debug.Log("guideline " + newObj.GetInstanceID());
-		}
 		Set_made_note_Property(newObj.GetInstanceID());
 	}
 

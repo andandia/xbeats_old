@@ -51,7 +51,6 @@ public class HoldArrowPool : ObjectPoolSuper
 				obj.transform.rotation = LookAt(1 , obj , ops.note_data.note_end_pos);
 				tween = Set_tween(obj);
 				obj.SetActive(true);
-				Debug.Log("obj.transform " + obj.transform.position);
 				Set_made_note_Property(obj.GetInstanceID() , tween);
 				return;
 			}
@@ -208,7 +207,6 @@ public class HoldArrowPool : ObjectPoolSuper
 	{
 		ops.made_Note.arrow_id_1 = arrowID1;
 		ops.made_Note.tween = tween;
-		Debug.Log("arrowID1 "  + arrowID1);
 	}
 
 
